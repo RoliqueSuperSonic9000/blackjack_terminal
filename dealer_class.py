@@ -77,3 +77,21 @@ class Dealer(object):
 		print("Hand: {h}".format(h = self.cards))
 		print("Count: {c}".format(c = self.get_score()))
 		print(tick*20)
+
+	# output minimized info
+	def quick_show(self):
+		print("{n}: {h}: {c}".format(n = self.name, h = self.cards, c = self.get_score()))
+		
+	# dealer decide to hit or stand
+	def highest(self, players):
+		for player in players:
+			if player.get_score() > self.get_score():
+				return False
+		return True
+	
+	# hit or stand. return True for hit, False for stand
+	def hit(self):
+		if self.get_score() < 17:
+			return True
+		else:
+			return False

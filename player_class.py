@@ -74,3 +74,7 @@ class Player(object):
 		print("Hand: {h}".format(h = self.cards)) #TODO format hand better
 		print("Count: {c}".format(c = self.get_score()))
 		print(tick*20)
+
+	# output minimized info
+	def quick_show(self):
+		print("{n}: {h}: {c}".format(n = self.name, h = self.cards, c = self.get_score()))

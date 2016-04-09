@@ -21,144 +21,20 @@ Game:
 15. back to line 7 
 
 """
-
 import argparse
 from random import randint
+from player_class import Player
+from dealer_class import Dealer
 
-#TODO: Create abstracted 'player' class for both player and dealer to extend
-"""
-# Player Class
-"""
-class Player(object):
-
-	# constructor
-	def __init__(self, n, c):
-		self._name = n
-		self._cash = c
-		self._cards = []
-	
-	@property
-	def name(self):
-		return self._name
-
-	@property
-	def cash(self):
-		return self._cash
-
-	@cash.setter
-	def cash(self, c):
-		self._cash = c
-	
-	@property
-	def cards(self):
-		return self._cards
-	
-	@cards.setter
-	def cards(self, s):
-		self._cards = s
-	
-	# receive card
-	def receive_card(self, card):
-		self.cards.append(card)
-	
-	#reset cards
-	def reset_cards(self):
-		self.cards = []
-	
-	# check if player has gone over 21
-	def check_bust(self):
-		sum = 0
-		for card in self.cards:
-			sum = sum + card
-			if sum > 21:
-				return True
-		return False
-	
-	def get_score(self):
-		score = 0
-		for card in self.cards:
-			score = score + card
-		return score
-			
-	def show_info(self):
-		tick = '-'
-		print(tick*20)
-		print("Name: {n}".format(n = self.name))
-		print("Cash: {c}".format(c = self.cash))
-		print("Hand: {h}".format(h = self.cards)) #TODO format hand better
-		print(tick*20)
-
-"""
-# Dealer Class
-"""
-# TODO: decision making dealer
-class Dealer(object):
-
-	# constructor
-	def __init__(self, name_list):
-		# initialize
-		self._name = name_list[0] # TODO: make random
-		self._cards = []
-		
-	@property
-	def name(self):
-		return self._name
-	
-	def greeting(self):
-		star ='*'
-		print("{name}: Hello I'm your dealer {name}".format(name = self.name))
-
-	@property
-	def cards(self):
-		return self._cards
-	
-	@cards.setter
-	def cards(self, s):
-		self._cards = s
-	
-	# receive card
-	def receive_card(self, card):
-		self.cards.append(card)
-	
-	#reset cards
-	def reset_cards(self):
-		self.cards = []
-	
-	# check if player has gone over 21
-	def check_bust(self):
-		sum = 0
-		for card in self.cards:
-			sum = sum + card
-			if sum > 21:
-				return True
-		return False
-		
-	def get_score(self):
-		score = 0
-		for card in self.cards:
-			score = score + card
-		return score
-		
-	def show_info(self):
-		tick = '-'
-		print(tick*20)
-		print("Name: {n} (Dealer)".format(n = self.name))
-		print("Hand: {h}".format(h = self.cards)) #TODO format hand better
-		print(tick*20)
-	
 """
 # Global Functions
 """
 # create the players
 def create_players(p):
 	players = []
-	random_name_list = ['Muffin','Poop','Fartface','Daipy','Turd','Cake','Skunk']
 	buy_in_list = [20,50,100,200,500]
 	for i in range(0, p):
 		name = raw_input("Enter player {number}'s name: ".format(number = i+1))
-		if name == "":
-			print("Shouldn't have let me choose your name... kek")
-			name = random_name_list[i] # TODO: make random
 		choose_buy_in = True
 		while choose_buy_in:
 			try:
@@ -176,12 +52,8 @@ def create_players(p):
 	
 # output player info to console
 def show_player_info(players):
-	pnd = '#'
-	print(pnd*20)
-	print("Players:")
 	for player in players:
 		player.show_info()
-	print(pnd*20)
 	
 # deal each player, including dealer, two cards
 # TODO: better way to iterate list twice aka deal two cards
@@ -252,12 +124,10 @@ if __name__ == "__main__":
 			print("Too many players")
 	
 	player_list = create_players(players)
-	print player_list
 	show_player_info(player_list)
 	
 	# Create the dealer
-	random_name_list = ['Paul','George','John','Ringo']
-	dealer = Dealer(random_name_list)
+	dealer = Dealer()
 	all_list = player_list
 	all_list.append(dealer)
 	

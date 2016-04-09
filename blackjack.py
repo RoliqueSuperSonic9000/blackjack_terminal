@@ -1,9 +1,7 @@
 # Blackjack Terminal Game
-
 # Python 2.7.11
 """
 Game:
-
 1. Run program
 2. Welcome to black jack
 3. How many players?
@@ -19,13 +17,11 @@ Game:
 13. take/give earnings/losses
 14. if player out of money -> buy back in? if not game over
 15. back to line 7 
-
 """
 import argparse
 from random import randint
 from player_class import Player
 from dealer_class import Dealer
-
 """
 # Global Functions
 """
@@ -75,7 +71,15 @@ def deal(players):
 
 # Rest of Hand after initial deal
 def play(dealer, players):
+	#This can be put in its own function too
 	cards = [1,2,3,4,5,6,7,8,9,10,10,10,10,11]
+	busted = player_turn(players, cards)
+	dealer_turn(players, cards, busted)
+	return busted
+	
+# players turns	
+def player_turn(players, cards):
+	bust_count = 0
 	for player in players:
 		player.quick_show()
 		ask = True
@@ -87,6 +91,7 @@ def play(dealer, players):
 				print("Card: {c}".format(c = card))
 				if player.check_bust():
 					print("Player Bust!")
+					bust_count = bust_count + 1
 					ask = False
 				else:
 					player.quick_show()
@@ -94,7 +99,14 @@ def play(dealer, players):
 				ask = False
 			else:
 				print("Invalid. Hit 'h' or 's'")
+	return bust_count
+
+# dealer decision turn	
+def dealer_turn(players, cards, bust_count):
 	deciding = True
+	# This needs to be put in its own function
+	if bust_count == len(players):
+		deciding = False
 	while deciding:
 		if dealer.highest(players):
 			dealer.quick_show()
@@ -116,16 +128,25 @@ def play(dealer, players):
 				deciding = False
 				
 # check how each player finished the hand
-def win_lose(dealer, players):
-	dealer_score = dealer.get_score()
-	for player in players:
-		if player.get_score() < dealer_score:
-			player.cash = player.cash - 10 # add method in player class for this
-		elif player.get_score() > dealer_score:
-			player.cash = player.cash + 10 # add method in player class for this
-		else:
-			print player.name + " Tie!"
-	show_player_info(players)
+def win_lose(dealer, players, busted):
+	skip = False
+	if busted == len(players):
+		print "Every player busted"
+		skip = True
+	if not skip:
+		dealer_score = dealer.get_score()
+		for player in players:
+			if player.check_bust():
+				player.lose()
+			elif player.get_score() < dealer_score and dealer_score < 22:
+				player.lose()
+			elif player.get_score() == dealer_score:
+				player.tie()
+			else:
+				player.win()
+	if skip:
+		for player in players:
+			player.lose()
 
 # reset every players cards
 def reset_cards(players):
@@ -141,11 +162,43 @@ def intro_msg():
 	print(pnd*50)
 	print(pnd*50)	
 
+#place bets
+def place_bets(players):
+	for player in players:
+		deciding = True
+		while deciding:
+			try:
+				bet = raw_input("{n} place your bet or type done to cash out: ".format(n = player.name))
+				if 'd' in bet:
+					out = players.pop(players.index(player))
+					print("{n} cashed out with: {c}".format(n = out.name, c = out.cash))
+					deciding = False
+					continue
+				else:
+					bet = int(bet)
+			except:
+				print("Invalid bet. setting bet as 10")
+				bet = 10
+			if player.cash - bet >= 0 and bet > 0:
+				player.bet = bet
+				deciding = False
+			else:
+				print("Can't do that bet.")
+				
+def out_of_money(players):
+	for player in players:
+		if player.cash <= 0:
+			print("Player out of money. bye.")
+			players.pop(players.index(player))
+	return players
+			
+
 # Main Method. Program Starts and Ends Here
 if __name__ == "__main__":
 
 	#TODO: This starting setting up game should be in a separate function!!!
 	parser = argparse.ArgumentParser(description="Blackjack Terminal Game")
+	args = parser.parse_args()
 	start = False
 
 	intro_msg()
@@ -182,12 +235,17 @@ if __name__ == "__main__":
 	end_game = False
 	round = 1
 	while not end_game:
+		place_bets(players)
 		deal(people)
 		show_player_info(people)
-		play(dealer, players)
-		win_lose(dealer, players)
+		busted = play(dealer, players)
+		win_lose(dealer, players, busted)
 		reset_cards(people)
-		
+		players = out_of_money(players)
+		if not players:
+			print("No players left. Game over.")
+			end_game = True
+			continue
 		again = raw_input("Continue Playing? (y/n)")
 		if again != 'y':
 			end_game = True

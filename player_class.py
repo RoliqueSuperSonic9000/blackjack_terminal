@@ -16,6 +16,8 @@ class Player(object):
 			self._name = n
 		self._cash = c
 		self._cards = []
+		self._score = 0
+		self._bet = 0
 	
 	@property
 	def name(self):
@@ -41,6 +43,28 @@ class Player(object):
 	def cards(self, s):
 		self._cards = s
 	
+	@property
+	def score(self):
+		return self._score
+		
+	@score.setter
+	def score(self, s):
+		self._score = s
+
+	@property
+	def bet(self):
+		return self._bet
+		
+	@bet.setter
+	def bet(self, b):
+		self._bet = b
+	# count score of cards
+	def get_score(self):
+		self.score = 0
+		for card in self.cards:
+			self.score = self.score + card
+		return self.score
+	
 	# receive card
 	def receive_card(self, card):
 		self.cards.append(card)
@@ -58,13 +82,18 @@ class Player(object):
 				return True
 		return False
 	
-	# count score of cards
-	def get_score(self):
-		score = 0
-		for card in self.cards:
-			score = score + card
-		return score
-			
+	def lose(self):
+		print("{n} loses.".format(n = self.name))
+		self.cash = self.cash - self.bet
+	
+	def win(self):
+		print("{n} wins!".format(n = self.name))
+		self.cash = self.cash + self.bet
+	
+	def tie(self):
+		print("{n} ties.".format(n = self.name))
+		self.cash = self.cash
+
 	# output useful information to the console
 	def show_info(self):
 		tick = '-'

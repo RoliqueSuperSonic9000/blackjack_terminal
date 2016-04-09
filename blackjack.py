@@ -36,6 +36,7 @@ class Player(object):
 		self._name = n
 		self._cash = c
 		self._cards = []
+	
 	@property
 	def name(self):
 		return self._name
@@ -52,19 +53,33 @@ class Player(object):
 	def cards(self):
 		return self._cards
 	
+	@cards.setter
+	def cards(self, s):
+		self._cards = s
+	
 	# receive card
 	def receive_card(self, card):
 		self.cards.append(card)
 	
+	#reset cards
+	def reset_cards(self):
+		self.cards = []
+	
 	# check if player has gone over 21
 	def check_bust(self):
 		sum = 0
-		for card in cards:
+		for card in self.cards:
 			sum = sum + card
 			if sum > 21:
 				return True
 		return False
-		
+	
+	def get_score(self):
+		score = 0
+		for card in self.cards:
+			score = score + card
+		return score
+			
 	def show_info(self):
 		tick = '-'
 		print(tick*20)
@@ -75,7 +90,8 @@ class Player(object):
 
 """
 # Dealer Class
-"""		
+"""
+# TODO: decision making dealer
 class Dealer(object):
 
 	# constructor
@@ -96,10 +112,33 @@ class Dealer(object):
 	def cards(self):
 		return self._cards
 	
+	@cards.setter
+	def cards(self, s):
+		self._cards = s
+	
 	# receive card
 	def receive_card(self, card):
 		self.cards.append(card)
 	
+	#reset cards
+	def reset_cards(self):
+		self.cards = []
+	
+	# check if player has gone over 21
+	def check_bust(self):
+		sum = 0
+		for card in self.cards:
+			sum = sum + card
+			if sum > 21:
+				return True
+		return False
+		
+	def get_score(self):
+		score = 0
+		for card in self.cards:
+			score = score + card
+		return score
+		
 	def show_info(self):
 		tick = '-'
 		print(tick*20)
@@ -116,14 +155,14 @@ def create_players(p):
 	random_name_list = ['Muffin','Poop','Fartface','Daipy','Turd','Cake','Skunk']
 	buy_in_list = [20,50,100,200,500]
 	for i in range(0, p):
-		name = raw_input("Enter player {number}'s name:".format(number = i+1))
+		name = raw_input("Enter player {number}'s name: ".format(number = i+1))
 		if name == "":
 			print("Shouldn't have let me choose your name... kek")
 			name = random_name_list[i] # TODO: make random
 		choose_buy_in = True
 		while choose_buy_in:
 			try:
-				buy = int(raw_input("How much do you want to start with: 20, 50, 100, 200, 500?"))
+				buy = int(raw_input("How much do you want to start with: 20, 50, 100, 200, 500? "))
 			except:
 				print("Please Enter a number. setting buyin to 100")
 				buy = 100
@@ -161,13 +200,13 @@ def play_hand(players, cards):
 		ask = True
 		while ask:
 			player.show_info()
-			hit_stand = raw_input("Hit or Stand? (h/s")
+			hit_stand = raw_input("Hit or Stand? (h/s): ")
 			if hit_stand.lower() == 'h' or hit_stand.lower() == 'hit':
 				card = cards[randint(0,13)]
 				player.receive_card(card)
 				if player.check_bust():
 					print("Player Bust!")
-					player.cash = player.cash - 10 # TODO allow bets
+					#player.cash = player.cash - 10 # TODO allow bets
 					player.show_info()
 					ask = False
 				else:
@@ -177,7 +216,24 @@ def play_hand(players, cards):
 				ask = False
 			else:
 				print("Invalid. Hit 'h' or 's'")
-				
+
+# check how each player finished the hand
+def win_lose(dealer, players):
+	dealer_score = dealer.get_score()
+	for player in players:
+		if player.get_score() < dealer_score:
+			player.cash = player.cash - 10 # add method in player class for this
+		elif player.get_score() > dealer_score:
+			player.cash = player.cash + 10 # add method in player class for this
+		else:
+			print player.name + " Tie!"
+	show_player_info(players)
+
+# reset every players cards
+def reset_cards(players):
+	for player in players:
+		player.reset_cards()
+
 # Main Method. Program Starts and Ends Here
 if __name__ == "__main__":
 
@@ -196,15 +252,17 @@ if __name__ == "__main__":
 			print("Too many players")
 	
 	player_list = create_players(players)
+	print player_list
 	show_player_info(player_list)
 	
 	# Create the dealer
 	random_name_list = ['Paul','George','John','Ringo']
 	dealer = Dealer(random_name_list)
-	player_list.append(dealer)
+	all_list = player_list
+	all_list.append(dealer)
 	
 	
-	# TODO: create a 'Deck' which actually gets shuffled and dealed
+	# TODO: create a 'Deck' which actually gets shuffled and delt
 	cards = [1,2,3,4,5,6,7,8,9,10,10,10,10,11]
 	
 	# TODO: let them add/delete players here.. aka change game setup
@@ -213,6 +271,9 @@ if __name__ == "__main__":
 	# Game Loop
 	####################################
 	dealer.greeting()
-	initial_deal(player_list, cards)
-	show_player_info(player_list)
-	play_hand(player_list, cards)
+	while True:
+		initial_deal(all_list, cards)
+		show_player_info(all_list)
+		play_hand(all_list, cards)
+		win_lose(dealer, player_list)
+		reset_cards(all_list)

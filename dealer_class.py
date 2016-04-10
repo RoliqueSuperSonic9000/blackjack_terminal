@@ -11,8 +11,9 @@ class Dealer(object):
 		random_names = ['Paul','George','John','Ringo']
 		name = random_names[randint(0,len(random_names) - 1)]
 		self._name = name
-		self._cards = []
+		self._hand = []
 		self._cash = 0
+		self._score = 0
 		
 	@property
 	def name(self):
@@ -31,12 +32,20 @@ class Dealer(object):
 		self._cash = c
 		
 	@property
-	def cards(self):
-		return self._cards
+	def hand(self):
+		return self._hand
 	
-	@cards.setter
-	def cards(self, s):
-		self._cards = s
+	@hand.setter
+	def hand(self, h):
+		self._hand = h
+	
+	@property
+	def score(self):
+		return self._score
+		
+	@score.setter
+	def score(self, s):
+		self._score = s
 	
 	# dealer says statement to start the game
 	def greeting(self):
@@ -47,40 +56,40 @@ class Dealer(object):
 	
 	# receive card
 	def receive_card(self, card):
-		self.cards.append(card)
+		self.hand.append(card)
 	
 	#reset cards
-	def reset_cards(self):
-		self.cards = []
+	def reset_hand(self):
+		self.hand = []
 	
 	# check if player has gone over 21
 	def check_bust(self):
 		sum = 0
-		for card in self.cards:
-			sum = sum + card
+		for card in self.hand:
+			sum = sum + card.value
 			if sum > 21:
 				return True
 		return False
 	
 	# count card current cards score
 	def get_score(self):
-		score = 0
-		for card in self.cards:
-			score = score + card
-		return score
+		self.score = 0
+		for card in self.hand:
+			self.score = self.score + card.value
+		return self.score
 		
 	# output relavant information to the console
 	def show_info(self):
 		tick = '-'
 		print(tick*20)
 		print("Name: {n} (Dealer)".format(n = self.name))
-		print("Hand: {h}".format(h = self.cards))
+		print("Hand: {h}".format(h = [card.display for card in self.hand]))
 		print("Count: {c}".format(c = self.get_score()))
 		print(tick*20)
 
 	# output minimized info
 	def quick_show(self):
-		print("{n}: {h}: {c}".format(n = self.name, h = self.cards, c = self.get_score()))
+		print("{n}: {h}: {c}".format(n = self.name, h = [card.display for card in self.hand], c = self.get_score()))
 		
 	# dealer decide to hit or stand
 	def highest(self, players):

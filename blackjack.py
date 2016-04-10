@@ -19,9 +19,11 @@ Game:
 15. back to line 7 
 """
 import argparse
+import time
 from random import randint
 from player_class import Player
 from dealer_class import Dealer
+from deck_class import Deck
 """
 # Global Functions
 """
@@ -57,28 +59,29 @@ def show_player_info(players):
 	
 # deal each player, including dealer, two cards
 # TODO: better way to iterate list twice aka deal two cards
-def deal(players):
+def deal(players, deck):
 	# TODO: create a 'Deck' which actually gets shuffled and delt
-	cards = [1,2,3,4,5,6,7,8,9,10,10,10,10,11]
+	#cards = [1,2,3,4,5,6,7,8,9,10,10,10,10,11]
 	print("Dealing Cards...")
 	for player in players:
-		card = cards[randint(0,len(cards) - 1)]
+		#card = cards[randint(0,len(cards) - 1)]
+		card = deck.deal_card()
 		player.receive_card(card)
 
 	for player in players:
-		card = cards[randint(0,len(cards) - 1)]
+		card = deck.deal_card()
 		player.receive_card(card)
 
 # Rest of Hand after initial deal
-def play(dealer, players):
+def play(dealer, players, deck):
 	#This can be put in its own function too
-	cards = [1,2,3,4,5,6,7,8,9,10,10,10,10,11]
-	busted = player_turn(players, cards)
-	dealer_turn(players, cards, busted)
+	#cards = [1,2,3,4,5,6,7,8,9,10,10,10,10,11]
+	busted = player_turn(players, deck)
+	dealer_turn(players, deck, busted)
 	return busted
 	
 # players turns	
-def player_turn(players, cards):
+def player_turn(players, deck):
 	bust_count = 0
 	for player in players:
 		player.quick_show()
@@ -86,9 +89,10 @@ def player_turn(players, cards):
 		while ask:
 			hit_stand = raw_input("Hit or Stand? (h/s): ")
 			if 'h' in hit_stand.lower():
-				card = cards[randint(0,13)] # generate card
+				card = deck.deal_card() # generate card
 				player.receive_card(card) # give player card
-				print("Card: {c}".format(c = card))
+				print("Card: {c}".format(c = card.display))
+				time.sleep(1)
 				if player.check_bust():
 					print("Player Bust!")
 					bust_count = bust_count + 1
@@ -102,7 +106,7 @@ def player_turn(players, cards):
 	return bust_count
 
 # dealer decision turn	
-def dealer_turn(players, cards, bust_count):
+def dealer_turn(players, deck, bust_count):
 	deciding = True
 	# This needs to be put in its own function
 	if bust_count == len(players):
@@ -115,9 +119,10 @@ def dealer_turn(players, cards, bust_count):
 		else:
 			if dealer.hit():
 				print('dealer hit')
-				card = cards[randint(0,13)]
+				card = deck.deal_card()
 				dealer.receive_card(card)
-				print("Card: {c}".format(c = card))
+				print("Card: {c}".format(c = card.display))
+				time.sleep(1.5)
 				dealer.quick_show()
 				if dealer.check_bust():
 					print("Dealer Bust!")
@@ -151,7 +156,7 @@ def win_lose(dealer, players, busted):
 # reset every players cards
 def reset_cards(players):
 	for player in players:
-		player.reset_cards()
+		player.reset_hand()
 
 # initial message
 def intro_msg():
@@ -167,8 +172,9 @@ def place_bets(players):
 	for player in players:
 		deciding = True
 		while deciding:
+			print("Type 'd' or 'done' to cash out.")
 			try:
-				bet = raw_input("{n} place your bet or type done to cash out: ".format(n = player.name))
+				bet = raw_input("{n} place your bet: ".format(n = player.name))
 				if 'd' in bet:
 					out = players.pop(players.index(player))
 					print("{n} cashed out with: {c}".format(n = out.name, c = out.cash))
@@ -184,15 +190,16 @@ def place_bets(players):
 				deciding = False
 			else:
 				print("Can't do that bet.")
-				
+	return players
+					
 def out_of_money(players):
 	for player in players:
 		if player.cash <= 0:
 			print("Player out of money. bye.")
 			players.pop(players.index(player))
 	return players
-			
 
+	
 # Main Method. Program Starts and Ends Here
 if __name__ == "__main__":
 
@@ -204,7 +211,7 @@ if __name__ == "__main__":
 	intro_msg()
 	# ask user how many players, can't have more than 5
 	while start == False:
-		number_of_players = int(raw_input("How many players? (up to 5)"))
+		number_of_players = int(raw_input("How many players? (up to 5): "))
 		# check if not more than 5 players
 		if number_of_players < 6:
 			start = True
@@ -232,23 +239,24 @@ if __name__ == "__main__":
 	####################################
 	# Game Loop
 	####################################
+	
+	deck = Deck(1) # initialize deck
+	deck.shuffle()
 	end_game = False
 	round = 1
 	while not end_game:
-		place_bets(players)
-		deal(people)
-		show_player_info(people)
-		busted = play(dealer, players)
-		win_lose(dealer, players, busted)
-		reset_cards(people)
-		players = out_of_money(players)
+		players = place_bets(players)
+		if players:
+			deal(people, deck)
+			show_player_info(people)
+			busted = play(dealer, players, deck)
+			win_lose(dealer, players, busted)
+			reset_cards(people)
+			players = out_of_money(players)
 		if not players:
 			print("No players left. Game over.")
 			end_game = True
 			continue
-		again = raw_input("Continue Playing? (y/n)")
-		if again != 'y':
-			end_game = True
 		
 		
 		

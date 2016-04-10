@@ -56,12 +56,13 @@ def get_user_info(i):
 def show_player_info(players):
 	for player in players:
 		player.show_info()
-	
+
 # deal each player, including dealer, two cards
 # TODO: better way to iterate list twice aka deal two cards
 def deal(players, deck):
 	# TODO: create a 'Deck' which actually gets shuffled and delt
 	#cards = [1,2,3,4,5,6,7,8,9,10,10,10,10,11]
+	dealer_blackjack = False
 	print("Dealing Cards...")
 	for player in players:
 		#card = cards[randint(0,len(cards) - 1)]
@@ -72,18 +73,30 @@ def deal(players, deck):
 		card = deck.deal_card()
 		player.receive_card(card)
 
+	if players[-1].score == 21:
+		print("Dealer Blackjack")
+	
+	if dealer_blackjack == True:
+		for player in players:
+			if player.score != 21:
+				player.lose()
+			else:
+				player.tie()
+	return dealer_blackjack
+
 # Rest of Hand after initial deal
 def play(dealer, players, deck):
 	#This can be put in its own function too
 	#cards = [1,2,3,4,5,6,7,8,9,10,10,10,10,11]
-	busted = player_turn(players, deck)
+	busted = player_turn(dealer, players, deck)
 	dealer_turn(players, deck, busted)
 	return busted
 	
 # players turns	
-def player_turn(players, deck):
+def player_turn(dealer, players, deck):
 	bust_count = 0
 	for player in players:
+		dealer.quick_show()
 		player.quick_show()
 		ask = True
 		while ask:
@@ -105,6 +118,7 @@ def player_turn(players, deck):
 				print("Invalid. Hit 'h' or 's'")
 	return bust_count
 
+# This should be moved into the dealer class
 # dealer decision turn	
 def dealer_turn(players, deck, bust_count):
 	deciding = True
@@ -113,7 +127,7 @@ def dealer_turn(players, deck, bust_count):
 		deciding = False
 	while deciding:
 		if dealer.highest(players):
-			dealer.quick_show()
+			#dealer.quick_show()
 			print('dealer stand')
 			deciding = False
 		else:
@@ -173,12 +187,16 @@ def place_bets(players):
 		deciding = True
 		while deciding:
 			print("Type 'd' or 'done' to cash out.")
+			print("Type 'i' or 'info' to see your information")
 			try:
 				bet = raw_input("{n} place your bet: ".format(n = player.name))
 				if 'd' in bet:
 					out = players.pop(players.index(player))
 					print("{n} cashed out with: {c}".format(n = out.name, c = out.cash))
 					deciding = False
+					continue
+				elif 'i' in bet:
+					player.show_info()
 					continue
 				else:
 					bet = int(bet)
@@ -193,23 +211,18 @@ def place_bets(players):
 	return players
 					
 def out_of_money(players):
+	keep = []
 	for player in players:
-		if player.cash <= 0:
-			print("Player out of money. bye.")
-			players.pop(players.index(player))
-	return players
+		if player.cash > 0:
+			keep.append(player)
+			#players.pop(players.index(player))
+		else:
+			print("Player out of money. bye {n}.".format(n = player.name))
+	return keep
 
-	
-# Main Method. Program Starts and Ends Here
-if __name__ == "__main__":
-
-	#TODO: This starting setting up game should be in a separate function!!!
-	parser = argparse.ArgumentParser(description="Blackjack Terminal Game")
-	args = parser.parse_args()
+# ask user how many players, can't have more than 5
+def how_many_playing():
 	start = False
-
-	intro_msg()
-	# ask user how many players, can't have more than 5
 	while start == False:
 		number_of_players = int(raw_input("How many players? (up to 5): "))
 		# check if not more than 5 players
@@ -217,11 +230,18 @@ if __name__ == "__main__":
 			start = True
 		else:
 			print("Too many players")
+	return number_of_players
+
 	
+# TODO: let them add/delete players here.. aka change game setup
+# Let players join mid game just like real blackjack
+# initial game setup	
+def setup(shoe_size):
+
+	intro_msg()
+	print("Number of decks being used in shoe: {s}".format(s = shoe_size))
+	number_of_players = how_many_playing()
 	players = create_players(number_of_players)
-	#show_player_info(player_list)
-	
-	# Create the dealer
 	dealer = Dealer()
 	dealer.greeting()
 	
@@ -229,30 +249,71 @@ if __name__ == "__main__":
 	for player in players:
 		print player.name
 		people.append(player)
-	
 	people.append(dealer)
-	#for p in people:
-	#	print p.name
 	
-	# TODO: let them add/delete players here.. aka change game setup
-	# Let players join mid game just like real blackjack
+	return players, dealer, people
+
+"""
+# same as below but i think slower
+combined_deck = []
+for deck in shoe:
+	print deck.unique_id
+	for card in deck.cards:
+		combined_deck.append(card)
+"""
+
+def create_shoe(shoe_size):
+	decks = []
+	for i in range(shoe_size):
+		decks.append(Deck(i))
+	shoe = [card for deck in decks for card in deck.cards]	
+	return shoe
+	
+# Main Method. Program Starts and Ends Here
+if __name__ == "__main__":
+	parser = argparse.ArgumentParser(description="Blackjack Terminal Game")
+	parser.add_argument("-s","--shoe",help="set how many decks used in the shoe", type=int)
+	args = parser.parse_args()
+	
+	if args.shoe:
+		shoe_size = args.shoe
+	else:
+		shoe_size = 6
+		
+	players, dealer, people = setup(shoe_size)
+	deck_size = 52
+	total_cards = shoe_size * deck_size
+	shoe = create_shoe(shoe_size)
+	
+	
 	####################################
 	# Game Loop
 	####################################
+
 	
-	deck = Deck(1) # initialize deck
-	deck.shuffle()
+	for card in shoe:
+		print card.display
+	
+	#deck = Deck(1) # initialize deck
+	#deck.shuffle()
 	end_game = False
 	round = 1
 	while not end_game:
+		print("***************************Round {r}*********************************".format(r = round))
+		if len(shoe) < total_cards/2:
+			print("Reshuffling deck")
+			#deck.new_deck() # add in reshuffle for shoe
 		players = place_bets(players)
 		if players:
-			deal(people, deck)
-			show_player_info(people)
-			busted = play(dealer, players, deck)
-			win_lose(dealer, players, busted)
-			reset_cards(people)
-			players = out_of_money(players)
+			dealer_blackjack = deal(people, shoe)
+			if dealer_blackjack:
+				continue
+			else:
+				show_player_info(people)
+				busted = play(dealer, players, shoe)
+				win_lose(dealer, players, busted)
+				reset_cards(people)
+				players = out_of_money(players)
 		if not players:
 			print("No players left. Game over.")
 			end_game = True

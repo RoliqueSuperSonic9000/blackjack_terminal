@@ -100,7 +100,12 @@ class Dealer(object):
 	
 	# hit or stand. return True for hit, False for stand
 	def hit(self):
-		if self.get_score() < 17:
+		soft = False
+		for card in self.hand:
+			if card.value == 11:
+				soft = True
+				break
+		if self.get_score() < 17 and not soft:
 			return True
 		else:
 			return False

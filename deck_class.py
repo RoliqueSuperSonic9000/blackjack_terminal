@@ -40,5 +40,16 @@ class Deck(object):
 			temp = self.cards[i]
 			self.cards[i], self.cards[j] = self.cards[j], self.cards[i]
 	
+	# remove card from deck
 	def deal_card(self):
 		return self.cards.pop(0)
+		
+	# decide when its time to reinitialize and reshuffle deck
+	def new_deck(self):
+		self.cards = []
+		for suit in Card.suits:
+			for rank in Card.ranks:
+				card = Card(suit, rank)
+				self._cards.append(card)
+		self.shuffle()
+		return self.cards

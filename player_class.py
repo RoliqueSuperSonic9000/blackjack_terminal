@@ -62,8 +62,15 @@ class Player(object):
 	# count score of cards
 	def get_score(self):
 		self.score = 0
+		ace = False
 		for card in self.hand:
+			if card.value == 11:
+				ace = True
 			self.score = self.score + card.value
+			if self.score > 21:
+				if ace:
+					self.score = self.score - 10
+					ace = False
 		return self.score
 	
 	# receive card
@@ -74,13 +81,22 @@ class Player(object):
 	def reset_hand(self):
 		self.hand = []
 	
+	# untested with aces
 	# check if player has gone over 21
+	# this is essentially the same as get_score().... need change
 	def check_bust(self):
 		sum = 0
+		ace = False
 		for card in self.hand:
+			if card.value == 11:
+				ace = True
 			sum = sum + card.value
 			if sum > 21:
-				return True
+				if ace:
+					sum = sum - 10
+					ace = False
+				else:
+					return True
 		return False
 	
 	def lose(self):

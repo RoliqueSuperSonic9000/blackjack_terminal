@@ -59,18 +59,18 @@ def show_player_info(players):
 
 # deal each player, including dealer, two cards
 # TODO: better way to iterate list twice aka deal two cards
-def deal(players, deck):
+def deal(players, shoe):
 	# TODO: create a 'Deck' which actually gets shuffled and delt
 	#cards = [1,2,3,4,5,6,7,8,9,10,10,10,10,11]
 	dealer_blackjack = False
 	print("Dealing Cards...")
 	for player in players:
 		#card = cards[randint(0,len(cards) - 1)]
-		card = deck.deal_card()
+		card = deal_card(shoe)
 		player.receive_card(card)
 
 	for player in players:
-		card = deck.deal_card()
+		card = deal_card(shoe)
 		player.receive_card(card)
 
 	if players[-1].score == 21:
@@ -85,15 +85,15 @@ def deal(players, deck):
 	return dealer_blackjack
 
 # Rest of Hand after initial deal
-def play(dealer, players, deck):
+def play(dealer, players, shoe):
 	#This can be put in its own function too
 	#cards = [1,2,3,4,5,6,7,8,9,10,10,10,10,11]
-	busted = player_turn(dealer, players, deck)
-	dealer_turn(players, deck, busted)
+	busted = player_turn(dealer, players, shoe)
+	dealer_turn(players, shoe, busted)
 	return busted
 	
 # players turns	
-def player_turn(dealer, players, deck):
+def player_turn(dealer, players, shoe):
 	bust_count = 0
 	for player in players:
 		dealer.quick_show()
@@ -102,7 +102,7 @@ def player_turn(dealer, players, deck):
 		while ask:
 			hit_stand = raw_input("Hit or Stand? (h/s): ")
 			if 'h' in hit_stand.lower():
-				card = deck.deal_card() # generate card
+				card = deal_card(shoe)
 				player.receive_card(card) # give player card
 				print("Card: {c}".format(c = card.display))
 				time.sleep(1)
@@ -120,31 +120,32 @@ def player_turn(dealer, players, deck):
 
 # This should be moved into the dealer class
 # dealer decision turn	
-def dealer_turn(players, deck, bust_count):
+def dealer_turn(players, shoe, bust_count):
 	deciding = True
-	# This needs to be put in its own function
 	if bust_count == len(players):
 		deciding = False
 	while deciding:
+		"""
+		# This is not how blackjack dealers play. removed.
 		if dealer.highest(players):
 			#dealer.quick_show()
 			print('dealer stand')
 			deciding = False
-		else:
-			if dealer.hit():
-				print('dealer hit')
-				card = deck.deal_card()
-				dealer.receive_card(card)
-				print("Card: {c}".format(c = card.display))
-				time.sleep(1.5)
-				dealer.quick_show()
-				if dealer.check_bust():
-					print("Dealer Bust!")
-					deciding = False
-			else:
-				dealer.quick_show()
-				print('dealer stand')
+		"""
+		if dealer.hit():
+			print('dealer hit')
+			card = deal_card(shoe)
+			dealer.receive_card(card)
+			print("Card: {c}".format(c = card.display))
+			time.sleep(1.5)
+			dealer.quick_show()
+			if dealer.check_bust():
+				print("Dealer Bust!")
 				deciding = False
+		else:
+			dealer.quick_show()
+			print('dealer stand')
+			deciding = False
 				
 # check how each player finished the hand
 def win_lose(dealer, players, busted):
@@ -209,7 +210,7 @@ def place_bets(players):
 			else:
 				print("Can't do that bet.")
 	return players
-					
+		
 def out_of_money(players):
 	keep = []
 	for player in players:
@@ -262,13 +263,31 @@ for deck in shoe:
 		combined_deck.append(card)
 """
 
+# create shoe
 def create_shoe(shoe_size):
 	decks = []
 	for i in range(shoe_size):
-		decks.append(Deck(i))
-	shoe = [card for deck in decks for card in deck.cards]	
+		deck = Deck(i)
+		deck.shuffle()
+		decks.append(deck)
+	shoe = [card for deck in decks for card in deck.cards]
+	shoe = shuffle(shoe)	
 	return shoe
-	
+
+#fisher-yates shuffle
+def shuffle(shoe):
+	n = len(shoe)
+	for i in range(n-1,0,-1):
+		j = randint(0, i)
+		if j == i:
+			continue
+		shoe[i], shoe[j] = shoe[j], shoe[i]
+	return shoe
+
+# pop card from shoe	
+def deal_card(shoe):
+	return shoe.pop(0)
+		
 # Main Method. Program Starts and Ends Here
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Blackjack Terminal Game")
@@ -301,7 +320,7 @@ if __name__ == "__main__":
 	while not end_game:
 		print("***************************Round {r}*********************************".format(r = round))
 		if len(shoe) < total_cards/2:
-			print("Reshuffling deck")
+			shoe = create_shoe(shoe_size)
 			#deck.new_deck() # add in reshuffle for shoe
 		players = place_bets(players)
 		if players:

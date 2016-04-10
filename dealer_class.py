@@ -2,7 +2,8 @@ from random import randint
 """
 # Dealer Class
 """
-# TODO: decision making dealer
+# TODO: Allow dealer to play by different house rules
+# TODO: Method for dealer to only show one card and then 'flip' once its his turn
 class Dealer(object):
 
 	# constructor

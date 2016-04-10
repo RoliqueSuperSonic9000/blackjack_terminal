@@ -37,7 +37,6 @@ class Deck(object):
 			j = randint(0, i)
 			if i == j:
 				continue
-			temp = self.cards[i]
 			self.cards[i], self.cards[j] = self.cards[j], self.cards[i]
 	
 	# remove card from deck

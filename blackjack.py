@@ -22,6 +22,7 @@ import argparse
 import time
 from random import randint
 from player_class import Player
+from bot_player_class import BotPlayer
 from dealer_class import Dealer
 from deck_class import Deck
 """
@@ -33,6 +34,8 @@ def create_players(p):
 	for i in range(0, p):
 		n, b = get_user_info(i)
 		players.append(Player(n, b))
+	bot = BotPlayer("bot", 20) # bot player 100 cash
+	players.append(bot)
 	return players
 
 # ask user for name and buy in amount
@@ -53,10 +56,12 @@ def get_user_info(i):
 	return name, buy
 	
 # output player info to console
-def show_player_info(players):
+def show_player_info(players, dealer):
+	pnd = '#'
 	for player in players:
 		player.show_info()
-
+	dealer.show_card()
+	print(pnd*50)
 # deal each player, including dealer, two cards
 # TODO: better way to iterate list twice aka deal two cards
 def deal(players, shoe):
@@ -95,35 +100,56 @@ def play(dealer, players, shoe):
 # players turns	
 def player_turn(dealer, players, shoe):
 	bust_count = 0
+	deciding = True
 	for player in players:
-		dealer.quick_show()
-		player.quick_show()
-		ask = True
-		while ask:
-			hit_stand = raw_input("Hit or Stand? (h/s): ")
-			if 'h' in hit_stand.lower():
-				card = deal_card(shoe)
-				player.receive_card(card) # give player card
-				print("Card: {c}".format(c = card.display))
-				time.sleep(1)
-				if player.check_bust():
-					print("Player Bust!")
-					bust_count = bust_count + 1
+		if player.name != 'bot':
+			dealer.show_card()
+			player.quick_show()
+			ask = True
+			while ask:
+				hit_stand = raw_input("Hit or Stand? (h/s): ")
+				if 'h' in hit_stand.lower():
+					card = deal_card(shoe)
+					player.receive_card(card) # give player card
+					print("Card: {c}".format(c = card.display))
+					time.sleep(1)
+					if player.check_bust():
+						print("Player Bust!")
+						bust_count = bust_count + 1
+						ask = False
+					else:
+						player.quick_show()
+				elif 's' in hit_stand.lower():
 					ask = False
 				else:
-					player.quick_show()
-			elif 's' in hit_stand.lower():
-				ask = False
+					print("Invalid. Hit 'h' or 's'")
+		else:
+			player.quick_show()
+			if player.hit():
+				print('bot hit')
+				card = deal_card(shoe)
+				player.receive_card(card)
+				dealer.receive_card(card)
+				print("Card: {c}".format(c = card.display))
+				time.sleep(1.5)
+				player.quick_show()
+			if player.check_bust():
+				print("Player Bust!")
+				deciding = False
 			else:
-				print("Invalid. Hit 'h' or 's'")
+				player.quick_show()
+				print('player stand')
+				deciding = False
 	return bust_count
 
 # This should be moved into the dealer class
 # dealer decision turn	
 def dealer_turn(players, shoe, bust_count):
+	dealer.quick_show()
+	time.sleep(1)
 	deciding = True
-	if bust_count == len(players):
-		deciding = False
+	#if bust_count == len(players):
+	#	deciding = False
 	while deciding:
 		"""
 		# This is not how blackjack dealers play. removed.
@@ -185,6 +211,10 @@ def intro_msg():
 #place bets
 def place_bets(players):
 	for player in players:
+		if player.name == "bot":
+			bet = 10
+			player.bet = bet
+			continue
 		deciding = True
 		while deciding:
 			print("Type 'd' or 'done' to cash out.")
@@ -315,12 +345,15 @@ if __name__ == "__main__":
 	
 	#deck = Deck(1) # initialize deck
 	#deck.shuffle()
+	reshuffle_count = 0
 	end_game = False
-	round = 1
+	round = 0
 	while not end_game:
+		round = round + 1
 		print("***************************Round {r}*********************************".format(r = round))
 		if len(shoe) < total_cards/2:
 			shoe = create_shoe(shoe_size)
+			reshuffle_count = reshuffle_count + 1
 			#deck.new_deck() # add in reshuffle for shoe
 		players = place_bets(players)
 		if players:
@@ -328,20 +361,13 @@ if __name__ == "__main__":
 			if dealer_blackjack:
 				continue
 			else:
-				show_player_info(people)
+				show_player_info(players, dealer)
 				busted = play(dealer, players, shoe)
 				win_lose(dealer, players, busted)
 				reset_cards(people)
 				players = out_of_money(players)
 		if not players:
 			print("No players left. Game over.")
+			print("reshuffle count: {c}".format(c = reshuffle_count))
 			end_game = True
 			continue
-		
-		
-		
-		
-		
-		
-		
-		

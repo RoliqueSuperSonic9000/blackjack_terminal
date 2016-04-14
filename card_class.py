@@ -21,7 +21,7 @@ class Card(object):
 		else:
 			self._value = str(self._rank)
 		"""
-		self._display = self._rank + self._suit
+		self._display = self._rank +" "+ self._suit
 		
 	@property
 	def name(self):

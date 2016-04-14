@@ -66,19 +66,33 @@ class Dealer(object):
 	# check if player has gone over 21
 	def check_bust(self):
 		sum = 0
+		ace = False
 		for card in self.hand:
+			if card.value == 11:
+				ace = True
 			sum = sum + card.value
 			if sum > 21:
-				return True
+				if ace == True:
+					sum = sum - 10
+					ace = False
+				else:
+					return True
 		return False
 	
 	# count card current cards score
 	def get_score(self):
 		self.score = 0
+		ace = False
 		for card in self.hand:
+			if card.value == 11:
+				ace = True
 			self.score = self.score + card.value
+			if self.score > 21:
+				if ace == True:
+					self.score = self.score - 10
+					ace = False
 		return self.score
-		
+	
 	# output relavant information to the console
 	def show_info(self):
 		tick = '-'
@@ -92,6 +106,10 @@ class Dealer(object):
 	def quick_show(self):
 		print("{n}: {h}: {c}".format(n = self.name, h = [card.display for card in self.hand], c = self.get_score()))
 		
+	# show only one card
+	def show_card(self):
+		print"Dealer: {h}, hidden card".format(h = self.hand[0].display)
+	
 	# dealer decide to hit or stand
 	def highest(self, players):
 		for player in players:
@@ -99,14 +117,10 @@ class Dealer(object):
 				return False
 		return True
 	
-	# hit or stand. return True for hit, False for stand
+	# stands on anything 17 and over
 	def hit(self):
-		soft = False
-		for card in self.hand:
-			if card.value == 11:
-				soft = True
-				break
-		if self.get_score() < 17 and not soft:
+		self.get_score()
+		if self.score < 17:
 			return True
 		else:
 			return False

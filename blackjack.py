@@ -26,7 +26,7 @@ from bot_player_class import BotPlayer
 from dealer_class import Dealer
 from deck_class import Deck
 """
-# Global Functions
+# Global Game Functions
 """
 # create the players
 def create_players(p):
@@ -34,7 +34,7 @@ def create_players(p):
 	for i in range(0, p):
 		n, b = get_user_info(i)
 		players.append(Player(n, b))
-	bot = BotPlayer("bot", 20) # bot player 100 cash
+	bot = BotPlayer("bot", 100) # bot player 100 cash
 	players.append(bot)
 	return players
 
@@ -62,6 +62,7 @@ def show_player_info(players, dealer):
 		player.show_info()
 	dealer.show_card()
 	print(pnd*50)
+
 # deal each player, including dealer, two cards
 # TODO: better way to iterate list twice aka deal two cards
 def deal(players, shoe):
@@ -142,28 +143,18 @@ def player_turn(dealer, players, shoe):
 				deciding = False
 	return bust_count
 
-# This should be moved into the dealer class
 # dealer decision turn	
 def dealer_turn(players, shoe, bust_count):
 	dealer.quick_show()
-	time.sleep(1)
+	time.sleep(1) # this should be made optional. if only bots, no wait
 	deciding = True
-	#if bust_count == len(players):
-	#	deciding = False
 	while deciding:
-		"""
-		# This is not how blackjack dealers play. removed.
-		if dealer.highest(players):
-			#dealer.quick_show()
-			print('dealer stand')
-			deciding = False
-		"""
-		if dealer.hit():
+		if dealer.check_hit():
 			print('dealer hit')
 			card = deal_card(shoe)
 			dealer.receive_card(card)
 			print("Card: {c}".format(c = card.display))
-			time.sleep(1.5)
+			time.sleep(1)
 			dealer.quick_show()
 			if dealer.check_bust():
 				print("Dealer Bust!")

@@ -65,15 +65,15 @@ class Dealer(object):
 	
 	# check if player has gone over 21
 	def check_bust(self):
-		sum = 0
+		self.score = 0
 		ace = False
 		for card in self.hand:
 			if card.value == 11:
 				ace = True
-			sum = sum + card.value
-			if sum > 21:
+			self.score = self.score + card.value
+			if self.score > 21:
 				if ace == True:
-					sum = sum - 10
+					self.score = self.score - 10
 					ace = False
 				else:
 					return True
@@ -118,7 +118,7 @@ class Dealer(object):
 		return True
 	
 	# stands on anything 17 and over
-	def hit(self):
+	def check_hit(self):
 		self.get_score()
 		if self.score < 17:
 			return True

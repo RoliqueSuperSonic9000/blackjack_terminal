@@ -108,8 +108,13 @@ def player_turn(dealer, players, shoe):
 			player.quick_show()
 			ask = True
 			while ask:
-				hit_stand = raw_input("Hit or Stand? (h/s): ")
-				if 'h' in hit_stand.lower():
+				# player choose action
+				try:
+					action = int(raw_input("Hit/Stand/Split/DoubleDown/Surrender/Insurance. 1 - 6"))
+				except ValueError, e:
+					print("Please type a number")
+					action = 0
+				if action == 1: # HIT
 					card = deal_card(shoe)
 					player.receive_card(card) # give player card
 					print("Card: {c}".format(c = card.display))
@@ -120,8 +125,24 @@ def player_turn(dealer, players, shoe):
 						ask = False
 					else:
 						player.quick_show()
-				elif 's' in hit_stand.lower():
+				elif action == 2:
 					ask = False
+				elif action == 3:
+					if player.hand[0].value == player.hand[1].value:
+						print("split")
+						player.split() # split hand
+						card1 = deal_card(shoe)
+						card2 = deal_card(shoe)
+						player.split_receive_cards(card1, card2)
+						player.split_show()
+					else:
+						print("Cannot do that action")
+				elif action == 4:
+					print("Double down")
+				elif action == 5:
+					print("Surrender")
+				elif action == 6:
+					print("Insurance")
 				else:
 					print("Invalid. Hit 'h' or 's'")
 		else:
@@ -130,9 +151,8 @@ def player_turn(dealer, players, shoe):
 				print('bot hit')
 				card = deal_card(shoe)
 				player.receive_card(card)
-				dealer.receive_card(card)
 				print("Card: {c}".format(c = card.display))
-				time.sleep(1.5)
+				time.sleep(1)
 				player.quick_show()
 			if player.check_bust():
 				print("Player Bust!")
@@ -254,7 +274,6 @@ def how_many_playing():
 			print("Too many players")
 	return number_of_players
 
-	
 # TODO: let them add/delete players here.. aka change game setup
 # Let players join mid game just like real blackjack
 # initial game setup	
@@ -274,15 +293,6 @@ def setup(shoe_size):
 	people.append(dealer)
 	
 	return players, dealer, people
-
-"""
-# same as below but i think slower
-combined_deck = []
-for deck in shoe:
-	print deck.unique_id
-	for card in deck.cards:
-		combined_deck.append(card)
-"""
 
 # create shoe
 def create_shoe(shoe_size):
@@ -325,17 +335,9 @@ if __name__ == "__main__":
 	total_cards = shoe_size * deck_size
 	shoe = create_shoe(shoe_size)
 	
-	
 	####################################
-	# Game Loop
+	# Game Loop                        #
 	####################################
-
-	
-	for card in shoe:
-		print card.display
-	
-	#deck = Deck(1) # initialize deck
-	#deck.shuffle()
 	reshuffle_count = 0
 	end_game = False
 	round = 0

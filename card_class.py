@@ -2,25 +2,15 @@
 Card Class
 """
 class Card(object):
-	
+
 	suits  = ['Clubs','Diamonds','Hearts','Spades']
-	
-	#ranks = ['2','3','4','5','6','7','8','9','10','JACK','QUEEN','KING','ACE']
-	ranks = {'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10, 'JACK':10,'QUEEN':10,'KING':10,'ACE':11}
+	#ranks = {'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10, 'JACK':10,'QUEEN':10,'KING':10,'ACE':11}
+	ranks = {'2':2,'3':2,'4':2,'5':2,'6':2,'7':2,'8':2,'9':2,'10':2, 'JACK':2,'QUEEN':2,'KING':2,'ACE':2}
 	def __init__(self, suit, rank):
 		self._suit = suit
 		self._rank = rank
 		self._name = str(rank) + " " + str(suit)
 		self._value = Card.ranks[self._rank]
-		"""
-		# This was used when ranks was a list
-		if self._rank in ['JACK','QUEEN','KING']:
-			self._value = 10
-		elif self._rank == 'ACE':
-			self._value = 11
-		else:
-			self._value = str(self._rank)
-		"""
 		self._display = self._rank +" "+ self._suit
 		
 	@property

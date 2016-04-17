@@ -3,14 +3,13 @@ from random import randint
 # Dealer Class
 """
 # TODO: Allow dealer to play by different house rules
-# TODO: Method for dealer to only show one card and then 'flip' once its his turn
 class Dealer(object):
 
-	# constructor
+	#global var
+	name_list = ['Paul','George','John','Ringo']
+
 	def __init__(self):
-		# initialize	
-		random_names = ['Paul','George','John','Ringo']
-		name = random_names[randint(0,len(random_names) - 1)]
+		name = Dealer.name_list[randint(0,len(Dealer.name_list) - 1)]
 		self._name = name
 		self._hand = []
 		self._cash = 0

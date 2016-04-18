@@ -97,7 +97,57 @@ def play(dealer, players, shoe):
 	busted = player_turn(dealer, players, shoe)
 	dealer_turn(players, shoe, busted)
 	return busted
+
+def player_split(player, shoe):
+	print("split")
+	player.split_hand() # split hand
+	card1 = deal_card(shoe)
+	card2 = deal_card(shoe)
+	player.split_receive_cards(card1, card2)
+	player.split_show()
 	
+	for hand in player.hand:
+		print("{n}: {h}: {c}".format(n = player.name, h = [card.display for card in hand], c = player.get_split_score()))
+		deciding = True
+		while deciding:
+			try:
+				action = int(raw_input("Hit/Stand/DoubleDown/Surrender (1,2,3,4): "))
+			except ValueError, e:
+				action = 0
+			if action == 1:
+				card = deal_card(shoe)
+				hand.append(card)
+				print("Card: {c}".format(c = card.display))
+				if check_hand_bust(hand):
+					print("Hand Busted!")
+					deciding = False
+				else:
+					player.split_show()
+			elif action == 2:
+				deciding = False
+				continue
+			elif action == 3:
+				print("double down")
+			elif action == 4:
+				print("Surrender")
+			else:
+				print("Invalid. type number 1,2,3, or 4")
+			
+def check_hand_bust(hand):
+	sum = 0
+	ace = False
+	for card in hand:
+		if card.value == 11:
+			ace = True
+		sum = sum + card.value
+		if sum > 21:
+			if ace:
+				sum = sum - 10
+				ace = False
+			else:
+				return True
+	return False	
+			
 # players turns	
 def player_turn(dealer, players, shoe):
 	bust_count = 0
@@ -108,9 +158,8 @@ def player_turn(dealer, players, shoe):
 			player.quick_show()
 			ask = True
 			while ask:
-				# player choose action
 				try:
-					action = int(raw_input("Hit/Stand/Split/DoubleDown/Surrender/Insurance. 1 - 6"))
+					action = int(raw_input("Hit/Stand/Split/DoubleDown/Surrender/Insurance. 1 - 6: "))
 				except ValueError, e:
 					print("Please type a number")
 					action = 0
@@ -125,16 +174,14 @@ def player_turn(dealer, players, shoe):
 						ask = False
 					else:
 						player.quick_show()
+						ask = False
 				elif action == 2:
 					ask = False
 				elif action == 3:
 					if player.hand[0].value == player.hand[1].value:
-						print("split")
-						player.split() # split hand
-						card1 = deal_card(shoe)
-						card2 = deal_card(shoe)
-						player.split_receive_cards(card1, card2)
-						player.split_show()
+						player.split = True
+						player_split(player, shoe)
+						ask = False
 					else:
 						print("Cannot do that action")
 				elif action == 4:
@@ -193,14 +240,25 @@ def win_lose(dealer, players, busted):
 	if not skip:
 		dealer_score = dealer.get_score()
 		for player in players:
-			if player.check_bust():
-				player.lose()
-			elif player.get_score() < dealer_score and dealer_score < 22:
-				player.lose()
-			elif player.get_score() == dealer_score:
-				player.tie()
+			if player.split == False:
+				if player.check_bust():
+					player.lose()
+				elif player.get_score() < dealer_score and dealer_score < 22:
+					player.lose()
+				elif player.get_score() == dealer_score:
+					player.tie()
+				else:
+					player.win()
 			else:
-				player.win()
+				for i in range (0, len(player.hand)):
+					if check_hand_bust(player.hand[i]):
+						player.lose()
+					elif player.get_split_score()[i] < dealer_score and dealer_score < 22:
+						player.lose()
+					elif player.get_split_score()[i] == dealer_score:
+						player.tie()
+					else:
+						player.win()
 	if skip:
 		for player in players:
 			player.lose()

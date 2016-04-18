@@ -18,7 +18,8 @@ class BotPlayer(object):
 		self._hand = []
 		self._score = 0
 		self._bet = 0
-	
+		self._split = False
+		
 	@property
 	def name(self):
 		return self._name
@@ -59,6 +60,14 @@ class BotPlayer(object):
 	def bet(self, b):
 		self._bet = b
 		
+	@property
+	def split(self):
+		return self._split
+		
+	@split.setter
+	def split(self, s):
+		self._split = s
+	
 	# count score of cards
 	def get_score(self):
 		self.score = 0

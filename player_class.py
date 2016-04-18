@@ -19,6 +19,7 @@ class Player(object):
 		self._hand = []
 		self._score = 0
 		self._bet = 0
+		self._split = False
 		self.split_score = []
 	
 	@property
@@ -60,7 +61,15 @@ class Player(object):
 	@bet.setter
 	def bet(self, b):
 		self._bet = b
-		
+	
+	@property
+	def split(self):
+		return self._split
+	
+	@split.setter
+	def split(self, s):
+		self._split = s
+	
 	# count score of cards
 	def get_score(self):
 		self.score = 0
@@ -132,7 +141,7 @@ class Player(object):
 					return True
 		return False
 	
-	def split(self):
+	def split_hand(self):
 		self.hand = [[self.hand[0]], [self.hand[1]]]
 		return self.hand
 
@@ -166,7 +175,9 @@ class Player(object):
 	def split_show(self):
 		hand1 = self.hand[0]
 		hand2 = self.hand[1]
+		print('-'*30)
 		print("Hand 1")
-		print("{n}: {h}: {c}".format(n = self.name, h = [card.display for card in hand1], c = self.get_split_score()))
+		print("{n}: {h}: {c}".format(n = self.name, h = [card.display for card in hand1], c = self.get_split_score()[0]))
 		print("Hand 2")
-		print("{n}: {h}: {c}".format(n = self.name, h = [card.display for card in hand2], c = self.get_split_score()))
+		print("{n}: {h}: {c}".format(n = self.name, h = [card.display for card in hand2], c = self.get_split_score()[1]))
+		print('-'*30)

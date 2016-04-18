@@ -12,7 +12,7 @@ The goal of this project is to create a some what realistic game of Blackjack.
 	
 Once the game itself is built and rules implemented correctly, my next goal is to:
 1) Create Bots that can play while you play or play on there own aka as a simulation
-  *Each bot will play by a specific set of rules
+* Each bot will play by a specific set of rules
   * Example:
     * Bot Always stay with any hand of 12 or above.
     * Bot Always hits with any hand below 17

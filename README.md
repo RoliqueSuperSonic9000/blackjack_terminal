@@ -2,13 +2,13 @@
 Python 2.7.11
 
 The goal of this project is to create a some what realistic game of Blackjack.
-	- Cards, Decks, Shoe
-	- Fisher-Yates shuffling algorithm
-	- House Rules
-		- Dealer Always stands on 17
-		- Dealer Hits on soft 17
-		- Other rules added after I research
-	- Can play with multiple people (even though it is through the command-line)
+	* Cards, Decks, Shoe
+	* Fisher-Yates shuffling algorithm
+	* House Rules
+	  * Dealer Always stands on 17
+	  * Dealer Hits on soft 17
+	  * Other rules added after I research
+	* Can play with multiple people (even though it is through the command-line)
 	
 Once the game itself is built and rules implemented correctly, my next goal is to:
 	1) Create Bots that can play while you play or play on there own aka as a simulation

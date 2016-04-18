@@ -21,6 +21,15 @@ class Player(object):
 		self._bet = 0
 		self._split = False
 		self.split_score = []
+		self._surrender = False
+		
+	@property
+	def surrender(self):
+		return self._surrender
+		
+	@surrender.setter
+	def surrender(self, s):
+		self._surrender = s
 	
 	@property
 	def name(self):

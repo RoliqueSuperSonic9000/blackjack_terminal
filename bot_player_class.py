@@ -19,6 +19,15 @@ class BotPlayer(object):
 		self._score = 0
 		self._bet = 0
 		self._split = False
+		self._surrender = False
+		
+	@property
+	def surrender(self):
+		return self._surrender
+		
+	@surrender.setter
+	def surrender(self, s):
+		self._surrender = s
 		
 	@property
 	def name(self):

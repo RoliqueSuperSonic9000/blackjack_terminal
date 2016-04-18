@@ -105,9 +105,10 @@ def player_split(player, shoe):
 	card2 = deal_card(shoe)
 	player.split_receive_cards(card1, card2)
 	player.split_show()
-	
+	i = 0
 	for hand in player.hand:
-		print("{n}: {h}: {c}".format(n = player.name, h = [card.display for card in hand], c = player.get_split_score()))
+		print("{n}: {h}: {c}".format(n = player.name, h = [card.display for card in hand], c = player.get_split_score()[i]))
+		i = i + 1
 		deciding = True
 		while deciding:
 			try:
@@ -175,21 +176,42 @@ def player_turn(dealer, players, shoe):
 					else:
 						player.quick_show()
 						ask = False
-				elif action == 2:
+				elif action == 2: #STAND
 					ask = False
-				elif action == 3:
+				elif action == 3: #SPLIT
 					if player.hand[0].value == player.hand[1].value:
 						player.split = True
 						player_split(player, shoe)
 						ask = False
 					else:
 						print("Cannot do that action")
-				elif action == 4:
-					print("Double down")
-				elif action == 5:
-					print("Surrender")
-				elif action == 6:
-					print("Insurance")
+				elif action == 4: #DOUBLE DOWN
+					if (player.bet*2) >= player.cash:
+						player.bet = player.bet * 2
+						print("Double down!")
+						print("{n}'s bet is now: {b}".format(n = player.name, b = player.bet))
+						card = deal_card(shoe)
+						player.receive_card(card)
+						print("Card: {c}".format(c = card.display))
+						if player.check_bust():
+							print("Player Bust!")
+							bust_count = bust_count + 1
+						else:
+							player.quick_show()
+						ask = False
+					else:
+						print("Not enough cash!")
+				elif action == 5: #SURRENDER
+					print("{n} surrender's hand.".format(n = player.name))
+					tmp = player.bet/2
+					player.cash = player.cash - tmp
+					player.surrender = True
+					ask = False
+				elif action == 6: #INSURANCE
+					if dealer.hand[0].value == 11:
+						print("Insurance")
+					else:
+						print("Not allowed")
 				else:
 					print("Invalid. Hit 'h' or 's'")
 		else:
@@ -240,25 +262,26 @@ def win_lose(dealer, players, busted):
 	if not skip:
 		dealer_score = dealer.get_score()
 		for player in players:
-			if player.split == False:
-				if player.check_bust():
-					player.lose()
-				elif player.get_score() < dealer_score and dealer_score < 22:
-					player.lose()
-				elif player.get_score() == dealer_score:
-					player.tie()
-				else:
-					player.win()
-			else:
-				for i in range (0, len(player.hand)):
-					if check_hand_bust(player.hand[i]):
+			if not player.surrender:
+				if not player.split:
+					if player.check_bust():
 						player.lose()
-					elif player.get_split_score()[i] < dealer_score and dealer_score < 22:
+					elif player.get_score() < dealer_score and dealer_score < 22:
 						player.lose()
-					elif player.get_split_score()[i] == dealer_score:
+					elif player.get_score() == dealer_score:
 						player.tie()
 					else:
 						player.win()
+				else:
+					for i in range (0, len(player.hand)):
+						if check_hand_bust(player.hand[i]):
+							player.lose()
+						elif player.get_split_score()[i] < dealer_score and dealer_score < 22:
+							player.lose()
+						elif player.get_split_score()[i] == dealer_score:
+							player.tie()
+						else:
+							player.win()
 	if skip:
 		for player in players:
 			player.lose()

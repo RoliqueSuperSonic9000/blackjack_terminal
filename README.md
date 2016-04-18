@@ -1,6 +1,10 @@
 # Blackjack Terminal Game
-Python 2.7.11
 
+````Python
+# Python 2.7.11
+````
+
+### Project Goals
 The goal of this project is to create a some what realistic game of Blackjack.
 * Cards, Decks, Shoe
 * Fisher-Yates shuffling algorithm

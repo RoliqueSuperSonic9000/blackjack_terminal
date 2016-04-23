@@ -1,7 +1,7 @@
 # Blackjack Terminal Game
 
 ````Python
-# Python 2.7.11
+ Python 2.7.11
 ````
 
 ### Project Goals

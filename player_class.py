@@ -22,6 +22,24 @@ class Player(object):
 		self._split = False
 		self.split_score = []
 		self._surrender = False
+		self._insurance = False
+		self._insurance_bet = 0
+	
+	@property
+	def insurance_bet(self):
+		return self._insurance_bet
+		
+	@insurance_bet.setter
+	def insurance_bet(self, i):
+		self._insurance_bet = i
+	
+	@property
+	def insurance(self):
+		return self._insurance
+	
+	@insurance.setter
+	def insurance(self, i):
+		self._insurance = i
 		
 	@property
 	def surrender(self):

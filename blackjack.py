@@ -175,18 +175,20 @@ def player_turn(dealer, players, shoe):
 						ask = False
 					else:
 						player.quick_show()
-						ask = False
 				elif action == 2: #STAND
 					ask = False
 				elif action == 3: #SPLIT
 					if player.hand[0].value == player.hand[1].value:
-						player.split = True
-						player_split(player, shoe)
-						ask = False
+						if player.bet*2 <= player.cash:
+							player.split = True
+							player_split(player, shoe)
+							ask = False
+						else:
+							print("Not enough cash to do that bet")
 					else:
 						print("Cannot do that action")
 				elif action == 4: #DOUBLE DOWN
-					if (player.bet*2) >= player.cash:
+					if player.bet*2 <= player.cash:
 						player.bet = player.bet * 2
 						print("Double down!")
 						print("{n}'s bet is now: {b}".format(n = player.name, b = player.bet))
@@ -210,6 +212,18 @@ def player_turn(dealer, players, shoe):
 				elif action == 6: #INSURANCE
 					if dealer.hand[0].value == 11:
 						print("Insurance")
+						player.insurance = True
+						bet_not_place = True
+						while bet_not_place:
+							try:
+								insurance = int(raw_input("Place your insurance bet"))
+								if insurance + player.bet < player.cash:
+									bet_not_place = False
+								else:
+									print("You cant afford that bet")
+							except:
+								print("Please print a number")
+						player.insurance_bet = insurance					
 					else:
 						print("Not allowed")
 				else:
@@ -273,7 +287,7 @@ def win_lose(dealer, players, busted):
 					else:
 						player.win()
 				else:
-					for i in range (0, len(player.hand)):
+					for i in range (0, len(player.hand)-1):
 						if check_hand_bust(player.hand[i]):
 							player.lose()
 						elif player.get_split_score()[i] < dealer_score and dealer_score < 22:
@@ -282,14 +296,26 @@ def win_lose(dealer, players, busted):
 							player.tie()
 						else:
 							player.win()
+			if dealer_score == 21 and player.insurance:
+				player.cash = player.cash + player.insurance_bet
+			
+			if dealer_score != 21 and player.insurance:
+				player.cash = player.cash - player.insurance_bet
+				
 	if skip:
 		for player in players:
 			player.lose()
-
+	# check insurance
+	if dealer_score == 21:
+		for player in players:
+			if player.insurance:
+				player.cash = player.cash + player.insurance
 # reset every players cards
 def reset_cards(players):
 	for player in players:
 		player.reset_hand()
+		player.surrender = False
+		player.insurance = False
 
 # initial message
 def intro_msg():

@@ -22,7 +22,16 @@ class BotPlayer(object):
 		self._surrender = False
 		self._insurance = False
 		self._insurance_bet = 0
+		self._blackjack = False
+		
+	@property
+	def blackjack(self):
+		return self._blackjack
 	
+	@blackjack.setter
+	def blackjack(self, b):
+		self._blackjack = b
+		
 	@property
 	def insurance_bet(self):
 		return self._insurance_bet
@@ -116,7 +125,14 @@ class BotPlayer(object):
 	#reset cards
 	def reset_hand(self):
 		self.hand = []
-	
+		self.score = 0
+		self.bet = 0
+		self.split = False
+		self.surrender = False
+		self.insurance = False
+		self.insurance_bet = 0
+		self._blackjack = False
+			
 	# untested with aces
 	# check if player has gone over 21
 	# this is essentially the same as get_score().... need change

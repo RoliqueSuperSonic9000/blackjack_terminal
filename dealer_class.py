@@ -8,13 +8,31 @@ class Dealer(object):
 	#global var
 	name_list = ['Paul','George','John','Ringo']
 
-	def __init__(self):
+	def __init__(self, h):
 		name = Dealer.name_list[randint(0,len(Dealer.name_list) - 1)]
 		self._name = name
 		self._hand = []
 		self._cash = 0
 		self._score = 0
+		self._house = h
+		self._blackjack = False
 		
+	@property
+	def blackjack(self):
+		return self._blackjack
+		
+	@blackjack.setter
+	def blackjack(self, b):
+		self._blackjack = b
+		
+	@property
+	def house(self):
+		return self._house
+		
+	@house.setter
+	def house(self, h):
+		self._house = h
+	
 	@property
 	def name(self):
 		return self._name
@@ -61,7 +79,9 @@ class Dealer(object):
 	#reset cards
 	def reset_hand(self):
 		self.hand = []
-	
+		self._score = 0
+		self._blackjack = False	
+		
 	# check if player has gone over 21
 	def check_bust(self):
 		self.score = 0

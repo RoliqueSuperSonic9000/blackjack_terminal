@@ -57,17 +57,8 @@ def deal(players, shoe):
 	for player in players:
 		card = deal_card(shoe)
 		player.receive_card(card)
-
-	if players[-1].score == 21:
-		print("Dealer Blackjack")
-	
-	if dealer_blackjack == True:
-		for player in players:
-			if player.score != 21:
-				player.lose()
-			else:
-				player.tie()
-	return dealer_blackjack
+		if player.get_score == 21:
+			player.blackjack == True
 
 # Rest of Hand after initial deal
 def play(dealer, players, shoe):
@@ -276,52 +267,49 @@ def dealer_turn(players, shoe, bust_count):
 # check how each player finished the hand
 def win_lose(dealer, players, busted):
 	skip = False
-	if busted == len(players):
-		print "Every player busted"
+	if dealer.blackjack:
 		skip = True
+		
 	if not skip:
 		dealer_score = dealer.get_score()
 		for player in players:
-			if not player.surrender:
-				if not player.split:
-					if player.check_bust():
-						player.lose()
-					elif player.get_score() < dealer_score and dealer_score < 22:
-						player.lose()
-					elif player.get_score() == dealer_score:
-						player.tie()
-					else:
-						player.win()
-				else:
-					for i in range (0, len(player.hand)):
-						if not player.split_surrender[i]:
-							if check_hand_bust(player.hand[i]):
-								player.lose()
-							elif player.get_split_score()[i] < dealer_score and dealer_score < 22:
-								player.lose()
-							elif player.get_split_score()[i] == dealer_score:
-								player.tie()
-							else:
-								player.win()
+			if not player.blackjack:
+				if not player.surrender:
+					if not player.split:
+						if player.check_bust():
+							player.lose()
+						elif player.get_score() < dealer_score and dealer_score < 22:
+							player.lose()
+						elif player.get_score() == dealer_score:
+							player.tie()
 						else:
-							print("Player already surrendered this hand")
-							
-			if dealer_score == 21 and player.insurance:
-				print("Player wins insurance bet!")
-				player.cash = player.cash + player.insurance_bet
-			
-			if dealer_score != 21 and player.insurance:
-				print("Player loses insurance bet!")
+							player.win()
+					else:
+						for i in range (0, len(player.hand)):
+							if not player.split_surrender[i]:
+								if check_hand_bust(player.hand[i]):
+									player.lose()
+								elif player.get_split_score()[i] < dealer_score and dealer_score < 22:
+									player.lose()
+								elif player.get_split_score()[i] == dealer_score:
+									player.tie()
+								else:
+									player.win()
+							else:
+								print("Player already surrendered this hand")
+			else:
+				player.blackjack_win()
+			if player.insurance:
 				player.cash = player.cash - player.insurance_bet
 				
 	if skip:
 		for player in players:
-			player.lose()
-	# check insurance
-	if dealer_score == 21:
-		for player in players:
+			if player.blackjack:
+				player.tie()
+			else:
+				player.lose()
 			if player.insurance:
-				player.cash = player.cash + player.insurance
+				player.cash = player.cash + player.insurance_bet
 				
 # reset every players cards
 def reset_cards(players):
@@ -395,13 +383,13 @@ def how_many_playing():
 # TODO: let them add/delete players here.. aka change game setup
 # Let players join mid game just like real blackjack
 # initial game setup	
-def setup(shoe_size):
+def setup(shoe_size, house):
 
 	intro_msg()
 	print("Number of decks being used in shoe: {s}".format(s = shoe_size))
 	number_of_players = how_many_playing()
 	players = create_players(number_of_players)
-	dealer = Dealer()
+	dealer = Dealer(house)
 	dealer.greeting()
 	
 	people = []
@@ -441,14 +429,20 @@ def deal_card(shoe):
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Blackjack Terminal Game")
 	parser.add_argument("-s","--shoe",help="set how many decks used in the shoe", type=int)
+	parser.add_argument("--house",help="1: Dealer stand on all 17, 2: Dealer hit on soft 17", type=int)
 	args = parser.parse_args()
 	
 	if args.shoe:
 		shoe_size = args.shoe
 	else:
 		shoe_size = 6
-		
-	players, dealer, people = setup(shoe_size)
+	
+	if args.house:
+		house_rules = house
+	else:
+		house = 1
+	
+	players, dealer, people = setup(shoe_size, house)
 	deck_size = 52
 	total_cards = shoe_size * deck_size
 	shoe = create_shoe(shoe_size)
@@ -468,16 +462,13 @@ if __name__ == "__main__":
 			#deck.new_deck() # add in reshuffle for shoe
 		players = place_bets(players)
 		if players:
-			dealer_blackjack = deal(people, shoe)
-			if dealer_blackjack:
-				continue
-			else:
-				show_player_info(players, dealer)
-				busted = play(dealer, players, shoe)
-				win_lose(dealer, players, busted)
-				reset_cards(people)
-				players = out_of_money(players)
-		if not players:
+			deal(people, shoe)
+			show_player_info(players, dealer)
+			busted = play(dealer, players, shoe)
+			win_lose(dealer, players, busted)
+			reset_cards(people)
+			players = out_of_money(players)
+		else:
 			print("No players left. Game over.")
 			print("reshuffle count: {c}".format(c = reshuffle_count))
 			end_game = True

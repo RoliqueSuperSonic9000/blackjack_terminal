@@ -26,6 +26,15 @@ class Player(object):
 		self._surrender = False
 		self._insurance = False
 		self._insurance_bet = 0
+		self._blackjack = False
+		
+	@property
+	def blackjack(self):
+		return self._blackjack
+	
+	@blackjack.setter
+	def blackjack(self, b):
+		self._blackjack = b
 	
 	@property
 	def split_score(self):
@@ -183,7 +192,8 @@ class Player(object):
 		self.bet = 0
 		self.split_bet = []
 		self.split_surrender = [False, False]
-		self.insurance_bet = 0		
+		self.insurance_bet = 0
+		self.blackjack = False	
 	
 	# untested with aces
 	# check if player has gone over 21
@@ -218,6 +228,10 @@ class Player(object):
 	def tie(self):
 		print("{n} ties.".format(n = self.name))
 
+	def blackjack_win(self):
+		print("Player Blackjack!")
+		self.cash = self.cash + (self.bet * 1.5)
+	
 	# output useful information to the console
 	def show_info(self):
 		tick = '-'

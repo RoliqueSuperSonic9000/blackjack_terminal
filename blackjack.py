@@ -1,23 +1,6 @@
 # Blackjack Terminal Game
 # Python 2.7.11
-"""
-Game:
-1. Run program
-2. Welcome to black jack
-3. How many players?
-4. Set table limit, starting money, bet types
-5. players buy in
-6. start game loop
-7. dealer deals
-8. for each player ask hit or stand
-9. if hit deal card
-10 if stand move to next player
-11.dealer will need built in rules -> under 17 hit?
-12. check scores
-13. take/give earnings/losses
-14. if player out of money -> buy back in? if not game over
-15. back to line 7 
-"""
+
 import argparse
 import time
 from random import randint
@@ -63,15 +46,11 @@ def show_player_info(players, dealer):
 	dealer.show_card()
 	print(pnd*50)
 
-# deal each player, including dealer, two cards
 # TODO: better way to iterate list twice aka deal two cards
 def deal(players, shoe):
-	# TODO: create a 'Deck' which actually gets shuffled and delt
-	#cards = [1,2,3,4,5,6,7,8,9,10,10,10,10,11]
 	dealer_blackjack = False
 	print("Dealing Cards...")
 	for player in players:
-		#card = cards[randint(0,len(cards) - 1)]
 		card = deal_card(shoe)
 		player.receive_card(card)
 
@@ -92,8 +71,6 @@ def deal(players, shoe):
 
 # Rest of Hand after initial deal
 def play(dealer, players, shoe):
-	#This can be put in its own function too
-	#cards = [1,2,3,4,5,6,7,8,9,10,10,10,10,11]
 	busted = player_turn(dealer, players, shoe)
 	dealer_turn(players, shoe, busted)
 	return busted
@@ -287,7 +264,9 @@ def win_lose(dealer, players, busted):
 					else:
 						player.win()
 				else:
-					for i in range (0, len(player.hand)-1):
+					for i in range (0, len(player.hand)):
+						print("Player.hand: {p}".format(p = player.hand))
+						print("Player.hand[i]: {i}".format(i = player.hand[i]))
 						if check_hand_bust(player.hand[i]):
 							player.lose()
 						elif player.get_split_score()[i] < dealer_score and dealer_score < 22:
@@ -296,10 +275,13 @@ def win_lose(dealer, players, busted):
 							player.tie()
 						else:
 							player.win()
+							
 			if dealer_score == 21 and player.insurance:
+				print("Player wins insurance bet!")
 				player.cash = player.cash + player.insurance_bet
 			
 			if dealer_score != 21 and player.insurance:
+				print("Player loses insurance bet!")
 				player.cash = player.cash - player.insurance_bet
 				
 	if skip:
@@ -310,12 +292,11 @@ def win_lose(dealer, players, busted):
 		for player in players:
 			if player.insurance:
 				player.cash = player.cash + player.insurance
+				
 # reset every players cards
 def reset_cards(players):
 	for player in players:
 		player.reset_hand()
-		player.surrender = False
-		player.insurance = False
 
 # initial message
 def intro_msg():

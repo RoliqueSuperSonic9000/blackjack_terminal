@@ -149,6 +149,12 @@ class Player(object):
 	#reset cards
 	def reset_hand(self):
 		self.hand = []
+		self.insurance = False
+		self.surrender = False
+		self.split = False
+		self.split_score = []
+		self.score = 0
+		self.bet = 0
 	
 	# untested with aces
 	# check if player has gone over 21
@@ -182,7 +188,6 @@ class Player(object):
 	
 	def tie(self):
 		print("{n} ties.".format(n = self.name))
-		self.cash = self.cash
 
 	# output useful information to the console
 	def show_info(self):

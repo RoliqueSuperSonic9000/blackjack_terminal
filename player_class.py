@@ -20,10 +20,36 @@ class Player(object):
 		self._score = 0
 		self._bet = 0
 		self._split = False
-		self.split_score = []
+		self._split_bet = []
+		self._split_score = []
+		self._split_surrender = [False, False]
 		self._surrender = False
 		self._insurance = False
 		self._insurance_bet = 0
+	
+	@property
+	def split_score(self):
+		return self._split_score
+		
+	@split_score.setter
+	def split_score(self, s):
+		self._split_score = s
+		
+	@property
+	def split_bet(self):
+		return self._split_bet
+		
+	@split_bet.setter
+	def split_bet(self, s):
+		self._split_bet = s
+		
+	@property
+	def split_surrender(self):
+		return self._split_surrender
+		
+	@split_surrender.setter
+	def split_surrender(self, s):
+		self._split_surrender = s
 	
 	@property
 	def insurance_bet(self):
@@ -146,7 +172,7 @@ class Player(object):
 		self.hand[0].append(card1)
 		self.hand[1].append(card2)
 	
-	#reset cards
+	#reset cards and all player vars except ones that carry over such as self.cash
 	def reset_hand(self):
 		self.hand = []
 		self.insurance = False
@@ -155,6 +181,9 @@ class Player(object):
 		self.split_score = []
 		self.score = 0
 		self.bet = 0
+		self.split_bet = []
+		self.split_surrender = [False, False]
+		self.insurance_bet = 0		
 	
 	# untested with aces
 	# check if player has gone over 21
@@ -194,7 +223,7 @@ class Player(object):
 		tick = '-'
 		print(tick*20)
 		print("Name: {n}".format(n = self.name))
-		print("Cash: {c}".format(c = self.cash))
+		print("Cash: {c}".format(c = self.cash - self.bet))
 		print("Hand: {h}".format(h = [card.display for card in self.hand])) #TODO format hand better
 		print("Count: {c}".format(c = self.get_score()))
 		print(tick*20)
@@ -210,6 +239,8 @@ class Player(object):
 		print('-'*30)
 		print("Hand 1")
 		print("{n}: {h}: {c}".format(n = self.name, h = [card.display for card in hand1], c = self.get_split_score()[0]))
+		print("Hand 1 bet: {b}".format(b = self.split_bet[0]))
 		print("Hand 2")
 		print("{n}: {h}: {c}".format(n = self.name, h = [card.display for card in hand2], c = self.get_split_score()[1]))
+		print("Hand 2 bet: {b}".format(b = self.split_bet[1]))
 		print('-'*30)

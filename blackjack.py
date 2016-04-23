@@ -85,14 +85,14 @@ def player_split(player, shoe):
 	i = 0
 	for hand in player.hand:
 		print("{n}: {h}: {c}".format(n = player.name, h = [card.display for card in hand], c = player.get_split_score()[i]))
-		i = i + 1
 		deciding = True
 		while deciding:
 			try:
-				action = int(raw_input("Hit/Stand/DoubleDown/Surrender (1,2,3,4): "))
+				action = int(raw_input("1: Hit, 2: Stand, 3: DoubleDown, 4: Surrender, 5: Info: "))
 			except ValueError, e:
 				action = 0
 			if action == 1:
+				print("Hit")
 				card = deal_card(shoe)
 				hand.append(card)
 				print("Card: {c}".format(c = card.display))
@@ -102,15 +102,41 @@ def player_split(player, shoe):
 				else:
 					player.split_show()
 			elif action == 2:
+				print("Stand")
 				deciding = False
 				continue
 			elif action == 3:
-				print("double down")
+				total_bet = 0
+				for bet in player.split_bet:
+					total_bet = total_bet + bet
+				if total_bet + player.split_bet[i] <= player.cash: #total bet plus 1 more
+					print("Double Down")
+					player.split_bet[i] = player.split_bet[i] * 2 # double the current bet
+					print("Bet for hand {i} is now: {b}".format(i = i+1, b = player.split_bet[i]))
+					card = deal_card(shoe)
+					hand.append(card)
+					print("Card: {c}".format(c = card.display))
+					if check_hand_bust(hand):
+						print("Hand Busted!")
+						#bust_count = bust_count + 1 # still deciding wether to keep this or not
+					else:
+						player.split_show()
+					deciding = False
+				else:
+					print("Not Enough cash to double down")
 			elif action == 4:
 				print("Surrender")
+				print("{n} surrender's hand.".format(n = player.name))
+				tmp = player.split_bet[i]/2
+				player.cash = player.cash - tmp
+				player.split_surrender[i] = True
+				deciding = False
+			elif action == 5:
+				player.split_show()
 			else:
-				print("Invalid. type number 1,2,3, or 4")
-			
+				print("Invalid. Enter a number 1 - 4")
+		i = i + 1 # increment hand counter
+		
 def check_hand_bust(hand):
 	sum = 0
 	ace = False
@@ -137,7 +163,7 @@ def player_turn(dealer, players, shoe):
 			ask = True
 			while ask:
 				try:
-					action = int(raw_input("Hit/Stand/Split/DoubleDown/Surrender/Insurance. 1 - 6: "))
+					action = int(raw_input("1: Hit, 2: Stand, 3: Split, 4: DoubleDown, 5: Surrender, 6: Insurance, 7: Info: "))
 				except ValueError, e:
 					print("Please type a number")
 					action = 0
@@ -158,6 +184,7 @@ def player_turn(dealer, players, shoe):
 					if player.hand[0].value == player.hand[1].value:
 						if player.bet*2 <= player.cash:
 							player.split = True
+							player.split_bet = [player.bet, player.bet]
 							player_split(player, shoe)
 							ask = False
 						else:
@@ -203,8 +230,10 @@ def player_turn(dealer, players, shoe):
 						player.insurance_bet = insurance					
 					else:
 						print("Not allowed")
+				elif action == 7: # PLAYER INFO
+					player.show_info()
 				else:
-					print("Invalid. Hit 'h' or 's'")
+					print("Invalid. Enter a number 1 - 7")
 		else:
 			player.quick_show()
 			if player.hit():
@@ -265,16 +294,17 @@ def win_lose(dealer, players, busted):
 						player.win()
 				else:
 					for i in range (0, len(player.hand)):
-						print("Player.hand: {p}".format(p = player.hand))
-						print("Player.hand[i]: {i}".format(i = player.hand[i]))
-						if check_hand_bust(player.hand[i]):
-							player.lose()
-						elif player.get_split_score()[i] < dealer_score and dealer_score < 22:
-							player.lose()
-						elif player.get_split_score()[i] == dealer_score:
-							player.tie()
+						if not player.split_surrender[i]:
+							if check_hand_bust(player.hand[i]):
+								player.lose()
+							elif player.get_split_score()[i] < dealer_score and dealer_score < 22:
+								player.lose()
+							elif player.get_split_score()[i] == dealer_score:
+								player.tie()
+							else:
+								player.win()
 						else:
-							player.win()
+							print("Player already surrendered this hand")
 							
 			if dealer_score == 21 and player.insurance:
 				print("Player wins insurance bet!")

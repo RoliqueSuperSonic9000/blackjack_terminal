@@ -4,14 +4,17 @@
 """
 from random import randint
 class BotPlayer(object):
-
+	# Class Variables
 	name_list = ['Whoop','Muffin','Poop','Fartface','Daipy','Turd','Cake','Skunk']
+	strategies = {1: 'Stand on 12 or Greater', 2: 'Stand on 17 or greater'}
+	DEFAULT = 1
 	# constructor
 	def __init__(self, c, t):
 		name = BotPlayer.name_list[randint(0,len(BotPlayer.name_list) - 1)]
 		self._name = name
 		self._cash = c
 		self._type = t
+		self._strategy = BotPlayer.strategies[BotPlayer.DEFAULT]
 		self._hand = []
 		self._score = 0
 		self._bet = 0
@@ -20,6 +23,14 @@ class BotPlayer(object):
 		self._insurance = False
 		self._insurance_bet = 0
 		self._blackjack = False
+	
+	@property
+	def strategy(self):
+		return self._strategy
+		
+	@strategy.setter
+	def strategy(self, s):
+		self._strategy = s
 	
 	@property
 	def type(self):
@@ -128,7 +139,7 @@ class BotPlayer(object):
 		self.hand.append(card)
 	
 	#reset cards
-	def reset_hand(self):
+	def reset(self):
 		self.hand = []
 		self.score = 0
 		self.bet = 0
@@ -168,6 +179,10 @@ class BotPlayer(object):
 		print("{n} ties.".format(n = self.name))
 		self.cash = self.cash
 
+	def blackjack_win(self):
+		print("Player Blackjack!")
+		self.cash = self.cash + self.bet + (self.bet * 1.5)
+		
 	# output useful information to the console
 	def show_info(self):
 		tick = '-'

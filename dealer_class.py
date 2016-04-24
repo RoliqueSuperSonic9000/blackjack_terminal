@@ -5,7 +5,7 @@ from random import randint
 # TODO: Allow dealer to play by different house rules
 class Dealer(object):
 
-	#global var
+	#Class Variables
 	name_list = ['Paul','George','John','Ringo']
 
 	def __init__(self, h):
@@ -77,7 +77,7 @@ class Dealer(object):
 		self.hand.append(card)
 	
 	#reset cards
-	def reset_hand(self):
+	def reset(self):
 		self.hand = []
 		self._score = 0
 		self._blackjack = False	

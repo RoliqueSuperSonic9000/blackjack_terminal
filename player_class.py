@@ -191,7 +191,7 @@ class Player(object):
 		self.hand[1].append(card2)
 	
 	#reset cards and all player vars except ones that carry over such as self.cash
-	def reset_hand(self):
+	def reset(self):
 		self.hand = []
 		self.insurance = False
 		self.surrender = False
@@ -238,7 +238,7 @@ class Player(object):
 		print("{n} ties.".format(n = self.name))
 
 	def blackjack_win(self):
-		print("Player Blackjack!")
+		print("{n} Blackjack!".format(n = player.name))
 		self.cash = self.cash + (self.bet * 1.5)
 	
 	# output useful information to the console
@@ -256,15 +256,22 @@ class Player(object):
 	def quick_show(self):
 		print("{n}: {h}: {c}".format(n = self.name, h = [card.display for card in self.hand], c = self.get_score()))
 	
-	# This needs to be fixed
+	# TODO: This needs to be fixed, it could be put into a for loop
 	def split_show(self):
 		hand1 = self.hand[0]
 		hand2 = self.hand[1]
 		print('-'*30)
+		print("Cash: {c}".format(c = self.cash - self.split_bet[0] - self.split_bet[1]))
 		print("Hand 1")
-		print("{n}: {h}: {c}".format(n = self.name, h = [card.display for card in hand1], c = self.get_split_score()[0]))
+		if self.get_split_score()[0] < 22:
+			print("{n}: {h}: {c}".format(n = self.name, h = [card.display for card in hand1], c = self.get_split_score()[0]))
+		else:
+			print("{n}: {h}: {c} -> BUSTED!".format(n = self.name, h = [card.display for card in hand1], c = self.get_split_score()[0]))
 		print("Hand 1 bet: {b}".format(b = self.split_bet[0]))
 		print("Hand 2")
-		print("{n}: {h}: {c}".format(n = self.name, h = [card.display for card in hand2], c = self.get_split_score()[1]))
+		if self.get_split_score()[1] < 22:
+			print("{n}: {h}: {c}".format(n = self.name, h = [card.display for card in hand1], c = self.get_split_score()[1]))
+		else:
+			print("{n}: {h}: {c} -> BUSTED!".format(n = self.name, h = [card.display for card in hand1], c = self.get_split_score()[1]))
 		print("Hand 2 bet: {b}".format(b = self.split_bet[1]))
 		print('-'*30)

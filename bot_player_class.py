@@ -23,7 +23,16 @@ class BotPlayer(object):
 		self._insurance = False
 		self._insurance_bet = 0
 		self._blackjack = False
-	
+		self._hit_count = 0
+		
+	@property
+	def hit_count(self):
+		return self._hit_count
+		
+	@hit_count.setter
+	def hit_count(self, h):
+		self._hit_count = h
+		
 	@property
 	def strategy(self):
 		return self._strategy
@@ -147,7 +156,8 @@ class BotPlayer(object):
 		self.surrender = False
 		self.insurance = False
 		self.insurance_bet = 0
-		self._blackjack = False
+		self.blackjack = False
+		self.hit_count = 0
 			
 	# untested with aces
 	# check if player has gone over 21

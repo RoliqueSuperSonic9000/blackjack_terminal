@@ -9,8 +9,8 @@ from bot_player_class import BotPlayer
 from dealer_class import Dealer
 from deck_class import Deck
 """
-TODO: 
-0. Minimum Bet/Maximum Bet Rules -> Potentially add to house rules
+TODO:
+The entire way the game is played from deal to end needs to be inspected and corrected
 1. Add Different House Rules
 2. Create different BotPlayer Profiles (Strategies)
 3. Better manage the way bots make bets
@@ -18,6 +18,7 @@ TODO:
 5. Import colorama module for colored terminal output
 6. Save all output strings into variables and replace print statement strings with vars
 	a. this will be for quick fixing and reusability. right now its kind of a mess
+7. House Rules Function. -> user can press a key to print out the house rules
 """
 """
 # Global Game Functions
@@ -101,7 +102,7 @@ def player_split(player, shoe):
 		deciding = True
 		while deciding:
 			try:
-				action = int(raw_input("1: Hit, 2: Stand, 3: DoubleDown, 4: Surrender, 5: Info: "))
+				action = int(raw_input("1: Hit, 2: Stand, 3: DoubleDown, 4: Info: "))
 			except ValueError, e:
 				action = 0
 			if action == 1:
@@ -138,13 +139,6 @@ def player_split(player, shoe):
 				else:
 					print("Not Enough cash to double down")
 			elif action == 4:
-				print("Surrender")
-				print("{n} surrender's hand.".format(n = player.name))
-				tmp = player.split_bet[i]/2
-				player.cash = player.cash - tmp
-				player.split_surrender[i] = True
-				deciding = False
-			elif action == 5:
 				player.split_show()
 			else:
 				print("Invalid. Enter a number 1 - 4")
@@ -181,6 +175,7 @@ def player_turn(dealer, players, shoe):
 					print("Please type a number")
 					action = 0
 				if action == 1: # HIT
+					player.hit_count = player.hit_count + 1
 					card = deal_card(shoe)
 					player.receive_card(card) # give player card
 					print("Card: {c}".format(c = card.display))
@@ -205,44 +200,47 @@ def player_turn(dealer, players, shoe):
 					else:
 						print("Cannot do that action")
 				elif action == 4: #DOUBLE DOWN
-					if player.bet*2 <= player.cash:
-						player.bet = player.bet * 2
-						print("Double down!")
-						print("{n}'s bet is now: {b}".format(n = player.name, b = player.bet))
-						card = deal_card(shoe)
-						player.receive_card(card)
-						print("Card: {c}".format(c = card.display))
-						if player.check_bust():
-							print("{n} Busts!".format(n = player.name))
-							bust_count = bust_count + 1
+					if player.hit_count == 0:
+						if player.bet*2 <= player.cash:
+							player.bet = player.bet * 2
+							print("Double down!")
+							print("{n}'s bet is now: {b}".format(n = player.name, b = player.bet))
+							card = deal_card(shoe)
+							player.receive_card(card)
+							print("Card: {c}".format(c = card.display))
+							if player.check_bust():
+								print("{n} Busts!".format(n = player.name))
+								bust_count = bust_count + 1
+							else:
+								player.quick_show()
+							ask = False
 						else:
-							player.quick_show()
+							print("Not enough cash!")
+					else:
+						print("You've already hit, cannot double down anymore")
+				elif action == 5: #SURRENDER
+					if player.hit_count == 0:
+						print("{n} surrender's hand.".format(n = player.name))
+						tmp = player.bet/2
+						player.cash = player.cash - tmp
+						player.surrender = True
 						ask = False
 					else:
-						print("Not enough cash!")
-				elif action == 5: #SURRENDER
-					print("{n} surrender's hand.".format(n = player.name))
-					tmp = player.bet/2
-					player.cash = player.cash - tmp
-					player.surrender = True
-					ask = False
+						print("Can only surrender as first action, you've already hit")
 				elif action == 6: #INSURANCE
-					if dealer.hand[0].value == 11:
-						print("Insurance")
-						player.insurance = True
-						bet_not_place = True
-						while bet_not_place:
-							try:
-								insurance = int(raw_input("Place your insurance bet: "))
-								if insurance + player.bet <= player.cash:
-									bet_not_place = False
-								else:
-									print("You cant afford that bet")
-							except:
-								print("Please print a number")
-						player.insurance_bet = insurance					
+					if player.hit_count == 0:
+						if dealer.hand[0].value == 11:
+							print("Insurance")
+							player.insurance = True
+							player.insurance_bet = player.bet/2
+							if player.insurance_bet + player.bet > player.cash:
+								print("Cannot afford insurance")
+								player.insurance = False
+								player.insurance_bet = 0
+						else:
+							print("Not allowed")
 					else:
-						print("Not allowed")
+						print("The time to pay for insurance has passed. You've already hit")
 				elif action == 7: # PLAYER INFO
 					player.show_info()
 				elif action == 8:
@@ -349,7 +347,7 @@ def intro_msg():
 	print(pnd*50)	
 
 #place bets
-def place_bets(players):
+def place_bets(players, minimum, maximum):
 	for player in players:
 		if player.type == "Bot":
 			bet = 10 # need to make this more of a real bet instead of 10 each time
@@ -376,9 +374,15 @@ def place_bets(players):
 				else:
 					bet = int(bet)
 			except:
-				print("Invalid bet. setting bet as 10")
-				bet = 10
-			if player.cash - bet >= 0 and bet > 0:
+				print("Invalid bet. Retry")
+				continue
+			if bet < minimum or bet > maximum:
+				print('-'*20)
+				print("Bet out of allowed range.")
+				print("Table Minimum: {min}, Table Maximum: {max}".format(min = minimum, max = maximum))
+				print('-'*20)
+				continue
+			elif player.cash - bet >= 0 and bet > 0:
 				player.bet = bet
 				deciding = False
 			else:
@@ -517,7 +521,7 @@ if __name__ == "__main__":
 			time.sleep(3)
 			shoe = create_shoe(shoe_size)
 			reshuffle_count = reshuffle_count + 1
-		players = place_bets(players)
+		players = place_bets(players, minimum, maximum)
 		if players:
 			deal(people, shoe)
 			show_player_info(players, dealer)

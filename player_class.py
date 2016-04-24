@@ -28,6 +28,15 @@ class Player(object):
 		self._insurance = False
 		self._insurance_bet = 0
 		self._blackjack = False
+		self._hit_count = 0
+		
+	@property
+	def hit_count(self):
+		return self._hit_count
+		
+	@hit_count.setter
+	def hit_count(self, h):
+		self._hit_count = h
 	
 	@property
 	def type(self):
@@ -202,7 +211,8 @@ class Player(object):
 		self.split_bet = []
 		self.split_surrender = [False, False]
 		self.insurance_bet = 0
-		self.blackjack = False	
+		self.blackjack = False
+		self.hit_count = 0
 	
 	# untested with aces
 	# check if player has gone over 21

@@ -3,18 +3,15 @@
 # Player Class
 """
 from random import randint
-
 class BotPlayer(object):
 
+	name_list = ['Whoop','Muffin','Poop','Fartface','Daipy','Turd','Cake','Skunk']
 	# constructor
-	def __init__(self, n, c):
-		random_name_list = ['Muffin','Poop','Fartface','Daipy','Turd','Cake','Skunk']
-		if n == "":
-			name = random_name_list[randint(0,len(random_name_list) - 1)]
-			self._name = name
-		else:
-			self._name = n
+	def __init__(self, c, t):
+		name = BotPlayer.name_list[randint(0,len(BotPlayer.name_list) - 1)]
+		self._name = name
 		self._cash = c
+		self._type = t
 		self._hand = []
 		self._score = 0
 		self._bet = 0
@@ -23,7 +20,15 @@ class BotPlayer(object):
 		self._insurance = False
 		self._insurance_bet = 0
 		self._blackjack = False
+	
+	@property
+	def type(self):
+		return self._type
 		
+	@type.setter
+	def type(self, t):
+		self._type = t
+	
 	@property
 	def blackjack(self):
 		return self._blackjack
@@ -168,7 +173,8 @@ class BotPlayer(object):
 		tick = '-'
 		print(tick*20)
 		print("Name: {n}".format(n = self.name))
-		print("Cash: {c}".format(c = self.cash))
+		print("Cash: {c}".format(c = self.cash - self.bet))
+		print("Bet:  {b}".format(b = self.bet))
 		print("Hand: {h}".format(h = [card.display for card in self.hand])) #TODO format hand better
 		print("Count: {c}".format(c = self.get_score()))
 		print(tick*20)

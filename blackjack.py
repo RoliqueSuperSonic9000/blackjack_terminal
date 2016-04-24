@@ -9,16 +9,33 @@ from bot_player_class import BotPlayer
 from dealer_class import Dealer
 from deck_class import Deck
 """
+TODO: 
+1. Ask user if want to play with bot/bots
+2. Add Arg to parser for bot setup: start money, stategy, etc
+"""
+"""
 # Global Game Functions
 """
 # create the players
-def create_players(p):
+def create_players(p, bots):
 	players = []
 	for i in range(0, p):
 		n, b = get_user_info(i)
-		players.append(Player(n, b))
-	bot = BotPlayer("bot", 100) # bot player 100 cash
-	players.append(bot)
+		players.append(Player(n, b, 'Human'))
+	#bot = BotPlayer("bot", 100) # bot player 100 cash
+	#players.append(bot)
+	for i in range(0, bots):
+		entering = True
+		while entering:
+			try:
+				cash = int(raw_input("Enter starting cash for Bot {num} (20, 50, 100, 200, 500): ".format(num = i+1)))
+				if cash in [20, 50, 100, 200, 500]:
+					entering = False
+				else:
+					print("Please enter one of these: (20, 50, 100, 200, 500): ")
+			except ValueError, e:
+				print("Enter a number please")
+		players.append(BotPlayer(cash, 'Bot'))
 	return players
 
 # ask user for name and buy in amount
@@ -148,7 +165,7 @@ def player_turn(dealer, players, shoe):
 	bust_count = 0
 	deciding = True
 	for player in players:
-		if player.name != 'bot':
+		if player.type != 'Bot':
 			dealer.show_card()
 			player.quick_show()
 			ask = True
@@ -228,7 +245,7 @@ def player_turn(dealer, players, shoe):
 		else:
 			player.quick_show()
 			if player.hit():
-				print('bot hit')
+				print('{n} hits'.format(n = player.name))
 				card = deal_card(shoe)
 				player.receive_card(card)
 				print("Card: {c}".format(c = card.display))
@@ -239,7 +256,7 @@ def player_turn(dealer, players, shoe):
 				deciding = False
 			else:
 				player.quick_show()
-				print('player stand')
+				print('Player stand')
 				deciding = False
 	return bust_count
 
@@ -328,8 +345,8 @@ def intro_msg():
 #place bets
 def place_bets(players):
 	for player in players:
-		if player.name == "bot":
-			bet = 10
+		if player.type == "Bot":
+			bet = 10 # need to make this more of a real bet instead of 10 each time
 			player.bet = bet
 			continue
 		deciding = True
@@ -383,12 +400,12 @@ def how_many_playing():
 # TODO: let them add/delete players here.. aka change game setup
 # Let players join mid game just like real blackjack
 # initial game setup	
-def setup(shoe_size, house):
+def setup(shoe_size, house, bots):
 
 	intro_msg()
 	print("Number of decks being used in shoe: {s}".format(s = shoe_size))
 	number_of_players = how_many_playing()
-	players = create_players(number_of_players)
+	players = create_players(number_of_players, bots)
 	dealer = Dealer(house)
 	dealer.greeting()
 	
@@ -430,6 +447,7 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Blackjack Terminal Game")
 	parser.add_argument("-s","--shoe",help="set how many decks used in the shoe", type=int)
 	parser.add_argument("--house",help="1: Dealer stand on all 17, 2: Dealer hit on soft 17", type=int)
+	parser.add_argument("-b","--bots", help="Enter number of bots you want. Up to 5", type=int)
 	args = parser.parse_args()
 	
 	if args.shoe:
@@ -438,11 +456,25 @@ if __name__ == "__main__":
 		shoe_size = 6
 	
 	if args.house:
-		house_rules = house
+		house_rules = args.house
 	else:
 		house = 1
 	
-	players, dealer, people = setup(shoe_size, house)
+	if args.bots:
+		if args.bots > 5:
+			print("Can only play with at most 5 bots.")
+			entering = True
+			while entering:
+				try:
+					bots = int(raw_input("Enter number of bots: "))
+				except ValueError, e:
+					print("Enter a number")
+		else:
+			bots = args.bots
+	else:
+		bots = 0
+		
+	players, dealer, people = setup(shoe_size, house_rules, bots)
 	deck_size = 52
 	total_cards = shoe_size * deck_size
 	shoe = create_shoe(shoe_size)

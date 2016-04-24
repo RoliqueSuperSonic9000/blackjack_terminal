@@ -9,13 +9,14 @@ class Player(object):
 	# Global var list
 	name_list = ['Muffin','Poop','Fartface','Daipy','Turd','Cake','Skunk']
 
-	def __init__(self, n, c):
+	def __init__(self, n, c, t):
 		if n == "":
 			name = Player.name_list[randint(0,len(Player.name_list) - 1)]
 			self._name = name
 		else:
 			self._name = n
 		self._cash = c
+		self._type = t
 		self._hand = []
 		self._score = 0
 		self._bet = 0
@@ -27,6 +28,14 @@ class Player(object):
 		self._insurance = False
 		self._insurance_bet = 0
 		self._blackjack = False
+	
+	@property
+	def type(self):
+		return self._type
+		
+	@type.setter
+	def type(self, t):
+		self._type = t
 		
 	@property
 	def blackjack(self):
@@ -238,6 +247,7 @@ class Player(object):
 		print(tick*20)
 		print("Name: {n}".format(n = self.name))
 		print("Cash: {c}".format(c = self.cash - self.bet))
+		print("Bet:  {b}".format(b = self.bet))
 		print("Hand: {h}".format(h = [card.display for card in self.hand])) #TODO format hand better
 		print("Count: {c}".format(c = self.get_score()))
 		print(tick*20)

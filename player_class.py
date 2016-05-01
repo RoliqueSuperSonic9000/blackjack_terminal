@@ -29,7 +29,16 @@ class Player(object):
 		self._insurance_bet = 0
 		self._blackjack = False
 		self._hit_count = 0
+		self._split_hit_count = [0,0]
+
+	@property
+	def split_hit_count(self):
+		return self._split_hit_count
 		
+	@split_hit_count.setter
+	def split_hit_count(self, s):
+		self._split_hit_count = s
+			
 	@property
 	def hit_count(self):
 		return self._hit_count
@@ -213,6 +222,7 @@ class Player(object):
 		self.insurance_bet = 0
 		self.blackjack = False
 		self.hit_count = 0
+		self.split_hit_count = [0,0]
 	
 	# untested with aces
 	# check if player has gone over 21
@@ -224,7 +234,7 @@ class Player(object):
 			if card.value == 11:
 				ace = True
 			sum = sum + card.value
-			if sum > 21:
+			if sum > 21: # TODO: better way to do this would be to change value of that ace
 				if ace:
 					sum = sum - 10
 					ace = False
@@ -248,7 +258,7 @@ class Player(object):
 		print("{n} ties.".format(n = self.name))
 
 	def blackjack_win(self):
-		print("{n} Blackjack!".format(n = player.name))
+		print("{n} Blackjack!".format(n = self.name))
 		self.cash = self.cash + (self.bet * 1.5)
 	
 	# output useful information to the console

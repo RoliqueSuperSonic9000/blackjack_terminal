@@ -6,7 +6,7 @@ from colorama import init, Fore, Back, Style
 import time
 
 from random import randint
-from player_class import Player
+from base_player_class import Player
 from bot_player_class import BotPlayer
 from dealer_class import Dealer
 from deck_class import Deck
@@ -76,7 +76,7 @@ def get_user_info(i):
 		else:
 			choosing = False
 	return name, buy
-	
+
 # output player info to console
 def show_player_info(players, dealer = None):
 	""" Print each player's information to the console."""
@@ -101,7 +101,7 @@ def deal(players, shoe):
 		player.receive_card(card)
 		if player.get_score() == 21:
 			player.blackjack = True
-		
+
 # Rest of Hand after initial deal
 def play(dealer, players, shoe):
 	""" Container for player/dealer turns. Return value from player_turn."""
@@ -120,8 +120,8 @@ def player_split(player, shoe):
 	i = 0 # hand counter
 	for hand in player.hand:
 		print("{n}: {h}: {c}".format(
-								n = player.name, 
-								h = [card.display for card in hand], 
+								n = player.name,
+								h = [card.display for card in hand],
 								c = player.get_split_score()[i])
 								)
 		deciding = True
@@ -173,7 +173,7 @@ def player_split(player, shoe):
 			else:
 				print("Invalid. Enter a number 1 - 4")
 		i = i + 1
-		
+
 def check_hand_bust(hand):
 	""" Check if a hand has busted and return boolean."""
 	sum = 0
@@ -188,7 +188,7 @@ def check_hand_bust(hand):
 				ace = False
 			else:
 				return True
-	return False	
+	return False
 
 def player_turn(dealer, players, shoe):
 	"""Get input from user on what action to take on their hand."""
@@ -203,10 +203,10 @@ def player_turn(dealer, players, shoe):
 				try:
 					action = int(# needs to be fixed output sucks
 								raw_input(
-									"1: Hit, 2: Stand, 3: Split, \
-									4: DoubleDown, 5: Surrender, \
-									6: Insurance, 7: Self Info, \
-									8: All Info: "
+									"1: Hit, 2: Stand, 3: Split,"
+									"4: DoubleDown, 5: Surrender,"
+									"6: Insurance, 7: Self Info,"
+									"8: All Info: "
 									)
 								)
 				except ValueError, e:
@@ -272,7 +272,7 @@ def player_turn(dealer, players, shoe):
 							print("Insurance")
 							player.insurance = True
 							player.insurance_bet = player.bet/2
-							if (player.insurance_bet 
+							if (player.insurance_bet
 								+ player.bet) > player.cash:
 								print("Cannot afford insurance")
 								player.insurance = False
@@ -348,18 +348,25 @@ def win_lose(dealer, players, busted):
 							if not player.split_surrender[i]:
 								if check_hand_bust(player.hand[i]):
 									player.lose()
-								elif player.get_split_score()[i] < dealer_score and dealer_score < 22:
+								elif \
+								player.get_split_score()[i] < dealer_score \
+										and dealer_score < 22:
 									player.lose()
-								elif player.get_split_score()[i] == dealer_score:
+								elif\
+								player.get_split_score()[i] == dealer_score:
 									player.tie()
 								else:
 									player.win()
 							else:
-								print("{n} already surrendered this hand".format(n = player.name))
+								print("{n} already surrendered this hand"\
+													.format(n = player.name))
 			else:
 				player.blackjack_win()
 			if player.insurance:
-				print("{n} loses insurance money -> Dealer does not have blackjack".format(n = player.name))
+				print("{n} loses insurance money -> "
+							"Dealer does not have blackjack"\
+										.format(n = player.name)
+										)
 				player.cash = player.cash - player.insurance_bet # this could be moved to player class
 	else:
 		print("Dealer Blackjack!")
@@ -372,7 +379,7 @@ def win_lose(dealer, players, busted):
 			if player.insurance:
 				print("{n} Insurance pays off!".format(n = player.name))
 				player.cash = player.cash + player.insurance_bet # this could be moved to player class
-				
+
 def reset(players):
 	""" Reset each player's attributes to prepare for next deal."""
 	for player in players:
@@ -385,7 +392,7 @@ def intro_msg():
 	print(pnd*50)
 	print("         Welcome to Blackjack Terminal")
 	print(pnd*50)
-	print(pnd*50 + Fore.WHITE)	
+	print(pnd*50 + Fore.WHITE)
 
 def place_bets(players, minimum, maximum):
 	""" Prompt user to input their bet for the next hand."""
@@ -432,7 +439,7 @@ def place_bets(players, minimum, maximum):
 			else:
 				print("Can't do that bet.")
 	return players
-		
+
 def out_of_money(players):
 	""" Check if any player's have 0 cash and remove then from the game."""
 	keep = []
@@ -469,13 +476,13 @@ def setup(shoe_size, house, bots):
 	players = create_players(number_of_players, bots)
 	dealer = Dealer(house)
 	dealer.greeting()
-	
+
 	people = []
 	for player in players:
 		print player.name
 		people.append(player)
 	people.append(dealer)
-	
+
 	return players, dealer, people
 
 def create_shoe(shoe_size):
@@ -486,7 +493,7 @@ def create_shoe(shoe_size):
 		deck.shuffle()
 		decks.append(deck)
 	shoe = [card for deck in decks for card in deck.cards]
-	shoe = shuffle(shoe)	
+	shoe = shuffle(shoe)
 	return shoe
 
 def shuffle(shoe):
@@ -498,11 +505,11 @@ def shuffle(shoe):
 			continue
 		shoe[i], shoe[j] = shoe[j], shoe[i]
 	return shoe
-	
+
 def deal_card(shoe):
 	""" Pops a card from the shoe to 'deal' to a player."""
 	return shoe.pop(0)
-		
+
 # Main Method. Program Starts and Ends Here
 if __name__ == "__main__":
 	""" Game creation, setup and loop contained in here."""
@@ -514,7 +521,7 @@ if __name__ == "__main__":
 				)
 	parser.add_argument(
 				"--house", \
-				 help="1: Dealer stand on all 17, 2: Dealer hit on soft 17", \
+				 help="1: Dealer stand on all 17, 2: Dealer hit on soft 17",\
 				 type=int
 				 )
 	parser.add_argument(
@@ -530,12 +537,12 @@ if __name__ == "__main__":
 		SHOE_SIZE = args.shoe
 	else:
 		SHOE_SIZE = 6
-	
+
 	if args.house:
 		house_rules = args.house
 	else:
 		house_rules = 1 # default house rules as of right now
-	
+
 	if args.bots:
 		if args.bots > 5:
 			print("Can only play with at most 5 bots.")
@@ -549,26 +556,26 @@ if __name__ == "__main__":
 			bots = args.bots
 	else:
 		bots = 0
-	
+
 	if args.minimum in [10, 20, 50, 100]:
 		minimum = args.minimum
 	else:
 		print("Minimum table bet must be in [10, 20, 50, 100]")
 		print("Setting minimum table bet to 10")
 		minimum = 10
-		
+
 	if args.maximum in [10, 20, 50, 100, 500, 1000]:
 		maximum = args.maximum
 	else:
 		print("Maximum table bet must be in [10, 20, 50, 100, 500, 1000]")
 		print("Setting maximum table bet to 500")
 		maximum = 500
-	
-	players, dealer, people = setup(shoe_size, house_rules, bots)
+
+	players, dealer, people = setup(SHOE_SIZE, house_rules, bots)
 	DECK_SIZE = 52
 	TOTAL_CARDS = SHOE_SIZE * DECK_SIZE
-	shoe = create_shoe(shoe_size)
-	
+	shoe = create_shoe(SHOE_SIZE)
+
 	####################################
 	# Game Loop                        #
 	####################################

@@ -4,23 +4,26 @@
 import argparse
 from colorama import init, Fore, Back, Style
 import time
-
 from random import randint
-from base_player_class import Player
+
+from player_class import Player
 from bot_player_class import BotPlayer
 from dealer_class import Dealer
 from deck_class import Deck
 """
 TODO:
-The entire way the game is played from deal to end needs to be inspected and corrected
+The entire way the game is played from deal to end needs to be inspected and
+corrected
 1. Add Different House Rules
 2. Create different BotPlayer Profiles (Strategies)
 3. Better manage the way bots make bets
-6. Save all output strings into variables and replace print statement strings with vars
-	a. this will be for quick fixing and reusability. right now its kind of a mess
+6. Save all output strings into variables and replace print statement strings
+with vars this will be for quick fixing and reusability. right now its kind of
+a mess
 7. House Rules Function. -> user can press a key to print out the house rules
 8. Rework the player, botplayer, and dealer class to base class and subclass
 9. Change the exception type on inputs so you can quit the program with ^c
+10. Allow number of players to be input through argparse
 
 
 Colorama HELP:
@@ -68,7 +71,7 @@ def get_user_info(i):
 			buy = int(
 					raw_input("Select Starting Cash: 20, 50, 100, 200, 500? ")
 					)
-		except:
+		except ValueError, e:
 			print("Invalid. Choose one of the above")
 			continue
 		if buy not in buy_in_list:
@@ -127,8 +130,10 @@ def player_split(player, shoe):
 		deciding = True
 		while deciding:
 			try:
-				action = int(raw_input("1: Hit, 2: Stand, \
-				3: DoubleDown, 4: Info: "))
+				action = int(raw_input(
+								"1: Hit, 2: Stand,"
+								"3: DoubleDown, 4: Info: ")
+								)
 			except ValueError, e:
 				action = 0
 			if action == 1:
@@ -201,7 +206,7 @@ def player_turn(dealer, players, shoe):
 			ask = True
 			while ask:
 				try:
-					action = int(# needs to be fixed output sucks
+					action = int(
 								raw_input(
 									"1: Hit, 2: Stand, 3: Split,"
 									"4: DoubleDown, 5: Surrender,"
@@ -363,11 +368,7 @@ def win_lose(dealer, players, busted):
 			else:
 				player.blackjack_win()
 			if player.insurance:
-				print("{n} loses insurance money -> "
-							"Dealer does not have blackjack"\
-										.format(n = player.name)
-										)
-				player.cash = player.cash - player.insurance_bet # this could be moved to player class
+				player.insurance_lose()
 	else:
 		print("Dealer Blackjack!")
 		for player in players:
@@ -377,8 +378,7 @@ def win_lose(dealer, players, busted):
 			else:
 				player.lose()
 			if player.insurance:
-				print("{n} Insurance pays off!".format(n = player.name))
-				player.cash = player.cash + player.insurance_bet # this could be moved to player class
+				player.insurance_win()
 
 def reset(players):
 	""" Reset each player's attributes to prepare for next deal."""
@@ -398,7 +398,7 @@ def place_bets(players, minimum, maximum):
 	""" Prompt user to input their bet for the next hand."""
 	for player in players:
 		if player.type == "Bot":
-			bet = 10 # need to make this more of a real bet instead of 10 each time
+			bet = 10 # need to change this to be adjustable
 			player.bet = bet
 			continue
 		deciding = True
@@ -423,7 +423,7 @@ def place_bets(players, minimum, maximum):
 					continue
 				else:
 					bet = int(bet)
-			except:
+			except ValueError, e:
 				print("Invalid bet. Retry")
 				continue
 			if bet < minimum or bet > maximum:
@@ -464,7 +464,7 @@ def how_many_playing():
 				deciding = False
 			else:
 				print("Too many players")
-		except:
+		except ValueError, e:
 			print("Please enter a number")
 	return number_of_players
 

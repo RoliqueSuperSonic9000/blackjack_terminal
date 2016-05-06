@@ -1,4 +1,5 @@
 from random import randint
+from colorama import init, Fore, Back, Style
 
 class Player:
 
@@ -25,6 +26,15 @@ class Player:
 		self._blackjack = False
 		self._hit_count = 0
 		self._split_hit_count = [0,0]
+		self._outcome = 'None'
+
+	@property
+	def outcome(self):
+		return self._outcome
+
+	@outcome.setter
+	def outcome(self, o):
+		self._outcome = o
 
 	@property
 	def split_hit_count(self):
@@ -220,6 +230,7 @@ class Player:
 		self.blackjack = False
 		self.hit_count = 0
 		self.split_hit_count = [0,0]
+		self.outcome = "None"
 
 	def check_bust(self):
 		""" Check if the player's hand is over 21. Return boolean."""
@@ -244,22 +255,29 @@ class Player:
 
 	def lose(self):
 		""" Subtract the player's bet from the player's cash total."""
-		print("{n} loses.".format(n = self.name))
+		print(Fore.RED + "{n} loses.".format(n = self.name))
+		print(Fore.WHITE)
 		self.cash = self.cash - self.bet
+		self.outcome = "Lose"
 
 	def win(self):
 		""" Add the player's bet to the player's cash total."""
-		print("{n} wins!".format(n = self.name))
+		print(Fore.GREEN + "{n} wins!".format(n = self.name))
+		print(Fore.WHITE)
 		self.cash = self.cash + self.bet
+		self.outcome = "Win"
 
 	def tie(self):
 		""" Alert the player they have tied the dealer."""
-		print("{n} ties.".format(n = self.name))
+		print(Fore.BLUE + "{n} ties.".format(n = self.name))
+		print(Fore.WHITE)
+		self.outcome = "Tie"
 
 	def blackjack_win(self):
 		""" Add the players bet plus 1/2 bet to the player's cash total."""
 		print("{n} Blackjack!".format(n = self.name))
 		self.cash = self.cash + (self.bet * 1.5)
+		self.outcome = "Win"
 
 	def insurance_lose(self):
 		""" Subtract player's insurance bet from cash."""

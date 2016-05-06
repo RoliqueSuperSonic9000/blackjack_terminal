@@ -8,8 +8,8 @@ class BotPlayer(Player):
 	strategies = {1: 'Stand on 12 or Greater', 2: 'Stand on 17 or greater'}
 	DEFAULT = 1
 
-	def __init__(self, c, t):
-		self._name = Player.name_list[randint(0,len(BotPlayer.name_list) - 1)]
+	def __init__(self, n, c, t):
+		Player.__init__(self, n, c, t)
 		self._strategy = BotPlayer.strategies[BotPlayer.DEFAULT]
 
 	def hit(self):

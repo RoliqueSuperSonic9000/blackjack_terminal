@@ -1,7 +1,8 @@
-# Blackjack Terminal Game
-# Python 2.7.11
+#!/usr/bin/env python
 
+import sqlite3
 import argparse
+import sys
 from colorama import init, Fore, Back, Style
 import time
 from random import randint
@@ -14,6 +15,7 @@ from deck_class import Deck
 TODO:
 The entire way the game is played from deal to end needs to be inspected and
 corrected
+
 1. Add Different House Rules
 2. Create different BotPlayer Profiles (Strategies)
 3. Better manage the way bots make bets
@@ -36,7 +38,7 @@ Style: DIM, NORMAL, BRIGHT, RESET_ALL
 """
 # create the players
 def create_players(p, bots):
-	""" Create and append players and bots and return list of objects."""
+	""" Create and append players and bots and return list of players."""
 	players = []
 	for i in range(0, p):
 		n, b = get_user_info(i)
@@ -57,7 +59,7 @@ def create_players(p, bots):
 					)
 			except ValueError, e:
 				print("Enter a number please")
-		players.append(BotPlayer(cash, 'Bot'))
+		players.append(BotPlayer("",cash, 'Bot'))
 	return players
 
 # ask user for name and buy in amount
@@ -200,120 +202,120 @@ def player_turn(dealer, players, shoe):
 	bust_count = 0
 	deciding = True
 	for player in players:
-		if player.type != 'Bot':
-			dealer.show_card()
-			player.quick_show()
-			ask = True
-			while ask:
-				try:
-					action = int(
-								raw_input(
-									"1: Hit, 2: Stand, 3: Split,"
-									"4: DoubleDown, 5: Surrender,"
-									"6: Insurance, 7: Self Info,"
-									"8: All Info: "
+		if not player.blackjack:
+			if player.type != 'Bot':
+				dealer.show_card()
+				player.quick_show()
+				ask = True
+				while ask:
+					try:
+						action = int(
+									raw_input(
+										"1: Hit, 2: Stand, 3: Split,"
+										"4: DoubleDown, 5: Surrender,"
+										"6: Insurance, 7: Self Info,"
+										"8: All Info: "
+										)
 									)
-								)
-				except ValueError, e:
-					print("Please type a number")
-					action = 0
-				if action == 1: # HIT
-					player.hit_count = player.hit_count + 1
+					except ValueError, e:
+						print("Please type a number")
+						action = 0
+					if action == 1: # HIT
+						player.hit_count = player.hit_count + 1
+						card = deal_card(shoe)
+						player.receive_card(card)
+						print("Card: {c}".format(c = card.display))
+						#time.sleep(1)
+						if player.check_bust():
+							print("{n} Busts!".format(n = player.name))
+							bust_count = bust_count + 1
+							ask = False
+						else:
+							player.quick_show()
+					elif action == 2: #STAND
+						ask = False
+					elif action == 3: #SPLIT
+						if player.hand[0].value == player.hand[1].value:
+							if player.bet*2 <= player.cash:
+								player.split = True
+								player.split_bet = [player.bet, player.bet]
+								player_split(player, shoe)
+								ask = False
+							else:
+								print("Not enough cash to do that bet")
+						else:
+							print("Cannot do that action")
+					elif action == 4: #DOUBLE DOWN
+						if player.hit_count == 0:
+							if player.bet*2 <= player.cash:
+								player.bet = player.bet * 2
+								print("Double down!")
+								print("{n}'s bet is now: {b}"\
+										.format(n = player.name, b = player.bet))
+								card = deal_card(shoe)
+								player.receive_card(card)
+								print("Card: {c}".format(c = card.display))
+								if player.check_bust():
+									print("{n} Busts!".format(n = player.name))
+									bust_count = bust_count + 1
+								else:
+									player.quick_show()
+								ask = False
+							else:
+								print("Not enough cash!")
+						else:
+							print("You've already hit, cannot double down.")
+					elif action == 5: #SURRENDER
+						if player.hit_count == 0:
+							print("{n} surrender's hand.".format(n = player.name))
+							tmp = player.bet/2
+							player.cash = player.cash - tmp
+							player.surrender = True
+							ask = False
+						else:
+							print("You've already hit, cannot surrender.")
+					elif action == 6: #INSURANCE
+						if player.hit_count == 0:
+							if dealer.hand[0].value == 11:
+								print("Insurance")
+								player.insurance = True
+								player.insurance_bet = player.bet/2
+								if (player.insurance_bet
+									+ player.bet) > player.cash:
+									print("Cannot afford insurance")
+									player.insurance = False
+									player.insurance_bet = 0
+							else:
+								print("Not allowed")
+						else:
+							print("You've already hit, cannot buy insurance.")
+					elif action == 7: # PLAYER INFO
+						player.show_info()
+					elif action == 8:
+						show_player_info(players, dealer)
+					else:
+						print("Invalid. Enter a number 1 - 7")
+			else:
+				player.quick_show()
+				if player.hit():
+					print('{n} hits'.format(n = player.name))
 					card = deal_card(shoe)
 					player.receive_card(card)
 					print("Card: {c}".format(c = card.display))
-					time.sleep(1)
-					if player.check_bust():
-						print("{n} Busts!".format(n = player.name))
-						bust_count = bust_count + 1
-						ask = False
-					else:
-						player.quick_show()
-				elif action == 2: #STAND
-					ask = False
-				elif action == 3: #SPLIT
-					if player.hand[0].value == player.hand[1].value:
-						if player.bet*2 <= player.cash:
-							player.split = True
-							player.split_bet = [player.bet, player.bet]
-							player_split(player, shoe)
-							ask = False
-						else:
-							print("Not enough cash to do that bet")
-					else:
-						print("Cannot do that action")
-				elif action == 4: #DOUBLE DOWN
-					if player.hit_count == 0:
-						if player.bet*2 <= player.cash:
-							player.bet = player.bet * 2
-							print("Double down!")
-							print("{n}'s bet is now: {b}"\
-									.format(n = player.name, b = player.bet))
-							card = deal_card(shoe)
-							player.receive_card(card)
-							print("Card: {c}".format(c = card.display))
-							if player.check_bust():
-								print("{n} Busts!".format(n = player.name))
-								bust_count = bust_count + 1
-							else:
-								player.quick_show()
-							ask = False
-						else:
-							print("Not enough cash!")
-					else:
-						print("You've already hit, cannot double down.")
-				elif action == 5: #SURRENDER
-					if player.hit_count == 0:
-						print("{n} surrender's hand.".format(n = player.name))
-						tmp = player.bet/2
-						player.cash = player.cash - tmp
-						player.surrender = True
-						ask = False
-					else:
-						print("You've already hit, cannot surrender.")
-				elif action == 6: #INSURANCE
-					if player.hit_count == 0:
-						if dealer.hand[0].value == 11:
-							print("Insurance")
-							player.insurance = True
-							player.insurance_bet = player.bet/2
-							if (player.insurance_bet
-								+ player.bet) > player.cash:
-								print("Cannot afford insurance")
-								player.insurance = False
-								player.insurance_bet = 0
-						else:
-							print("Not allowed")
-					else:
-						print("You've already hit, cannot buy insurance.")
-				elif action == 7: # PLAYER INFO
-					player.show_info()
-				elif action == 8:
-					show_player_info(players, dealer)
+					#time.sleep(1)
+					player.quick_show()
+				if player.check_bust():
+					print("{n} Bust!".format(n = player.name))
+					deciding = False
 				else:
-					print("Invalid. Enter a number 1 - 7")
-		else:
-			player.quick_show()
-			if player.hit():
-				print('{n} hits'.format(n = player.name))
-				card = deal_card(shoe)
-				player.receive_card(card)
-				print("Card: {c}".format(c = card.display))
-				time.sleep(1)
-				player.quick_show()
-			if player.check_bust():
-				print("{n} Bust!".format(n = player.name))
-				deciding = False
-			else:
-				player.quick_show()
-				print("{n} stands".format(n = player.name))
-				deciding = False
+					player.quick_show()
+					print("{n} stands".format(n = player.name))
+					deciding = False
 	return bust_count
 
 def dealer_turn(players, shoe, bust_count):
 	""" Dealer action function."""
 	dealer.quick_show()
-	#time.sleep(1)
 	deciding = True
 	while deciding:
 		if dealer.check_hit():
@@ -321,7 +323,7 @@ def dealer_turn(players, shoe, bust_count):
 			card = deal_card(shoe)
 			dealer.receive_card(card)
 			print("Card: {c}".format(c = card.display))
-			time.sleep(1)
+			#time.sleep(1)
 			dealer.quick_show()
 			if dealer.check_bust():
 				print("Dealer Bust!")
@@ -510,6 +512,17 @@ def deal_card(shoe):
 	""" Pops a card from the shoe to 'deal' to a player."""
 	return shoe.pop(0)
 
+def insert_round(players, connection):
+	for player in players:
+		connection.execute("INSERT INTO ROUNDS (NAME,BET,CARD1,CARD2,OUTCOME) \
+      VALUES ('{n}',{b},'{c1}','{c2}','{o}');".format(
+	  													n=player.name,
+														b=player.bet,
+														c1=player.hand[0].name,
+														c2=player.hand[1].name,
+														o=player.outcome))
+	connection.commit()
+
 # Main Method. Program Starts and Ends Here
 if __name__ == "__main__":
 	""" Game creation, setup and loop contained in here."""
@@ -571,6 +584,22 @@ if __name__ == "__main__":
 		print("Setting maximum table bet to 500")
 		maximum = 500
 
+	#connect to database
+	try:
+		connection = sqlite3.connect('test_db')
+		print("DB Connected!")
+	except Exception, e:
+		print e
+		sys.exit(1)
+
+	#connection.execute("""SELECT name FROM sqlite_master WHERE type='table' AND name='table_name';""")
+	connection.execute(""" CREATE TABLE IF NOT EXISTS ROUNDS
+		(ID 	INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+		NAME 	TEXT,
+		BET 	INT,
+		CARD1 	TEXT,
+		CARD2,	TEXT,
+		OUTCOME TEXT);""")
 	players, dealer, people = setup(SHOE_SIZE, house_rules, bots)
 	DECK_SIZE = 52
 	TOTAL_CARDS = SHOE_SIZE * DECK_SIZE
@@ -588,7 +617,7 @@ if __name__ == "__main__":
 				.format(r = round))
 		if len(shoe) < TOTAL_CARDS/2:
 			print("Dealer Reshuffling Shoe!")
-			time.sleep(2)
+			#time.sleep(2)
 			shoe = create_shoe(SHOE_SIZE)
 			reshuffle_count = reshuffle_count + 1
 		players = place_bets(players, minimum, maximum)
@@ -597,6 +626,7 @@ if __name__ == "__main__":
 			show_player_info(players, dealer)
 			busted = play(dealer, players, shoe)
 			win_lose(dealer, players, busted)
+			insert_round(players, connection)
 			reset(people)
 			players = out_of_money(players)
 		else:
@@ -604,3 +634,5 @@ if __name__ == "__main__":
 			print("reshuffle count: {c}".format(c = reshuffle_count))
 			end_game = True
 			continue
+
+	connection.close()

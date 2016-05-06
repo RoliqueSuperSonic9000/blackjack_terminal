@@ -3,4 +3,6 @@
 /card_class.pyc
 /deck_class.pyc
 /bot_player_class.pyc
-/base_player_class.pyc
+/db_select.py
+/db_select.pyc
+/test_db

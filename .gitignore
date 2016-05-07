@@ -1,8 +1,8 @@
-/player_class.pyc
-/dealer_class.pyc
-/card_class.pyc
-/deck_class.pyc
-/bot_player_class.pyc
-/db_select.py
-/db_select.pyc
-/test_db
+/src/player_class.pyc
+/src/dealer_class.pyc
+/src/card_class.pyc
+/src/deck_class.pyc
+/src/bot_player_class.pyc
+/src/db_select.py
+/src/db_select.pyc
+/src/test_db

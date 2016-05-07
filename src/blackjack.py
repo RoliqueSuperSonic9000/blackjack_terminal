@@ -12,7 +12,6 @@ from bot_player_class import BotPlayer
 from dealer_class import Dealer
 from deck_class import Deck
 """
-3. Better manage the way bots make bets
 6. Save all output strings into variables and replace print statement strings
 with vars this will be for quick fixing and reusability. right now its kind of
 a mess
@@ -28,7 +27,7 @@ Style: DIM, NORMAL, BRIGHT, RESET_ALL
 # Global Game Functions
 """
 
-def create_players(p, bots):
+def create_players(p, bots, minimum, maximum):
 	""" Create and append players and bots and return list of players."""
 	players = []
 	for i in range(0, p):
@@ -50,7 +49,7 @@ def create_players(p, bots):
 					)
 			except ValueError, e:
 				print("Enter a number please")
-		players.append(BotPlayer("",cash, "Bot"))
+		players.append(BotPlayer("",cash, "Bot", minimum, maximum))
 	return players
 
 def get_user_info(i):
@@ -235,10 +234,7 @@ def player_turn(dealer, players, shoe):
 					elif action == 4: #DOUBLE DOWN
 						if player.hit_count == 0:
 							if player.bet*2 <= player.cash:
-								player.bet = player.bet * 2
-								print("Double down!")
-								print("{n}'s bet is now: {b}"\
-										.format(n = player.name, b = player.bet))
+								player.double_down()
 								card = deal_card(shoe)
 								player.receive_card(card)
 								print("Card: {c}".format(c = card.display))
@@ -388,8 +384,7 @@ def place_bets(players, minimum, maximum):
 	""" Prompt user to input their bet for the next hand."""
 	for player in players:
 		if player.type == "Bot":
-			bet = 10 # need to change this to be adjustable
-			player.bet = bet
+			player.place_bet()
 			continue
 		deciding = True
 		while deciding:
@@ -424,7 +419,7 @@ def place_bets(players, minimum, maximum):
 				print('-'*20)
 				continue
 			elif player.cash - bet >= 0 and bet > 0:
-				player.bet = bet
+				player.place_bet(bet)
 				deciding = False
 			else:
 				print("Can't do that bet.")
@@ -456,12 +451,12 @@ def how_many_playing():
 			print("Please enter a number")
 	return number_of_players
 
-def setup(shoe_size, house, bots):
+def setup(shoe_size, house, bots, minimum, maximum):
 	""" Print welcome info and create players, bots, and dealer."""
 	intro_msg()
 	print("Number of decks being used in shoe: {s}".format(s = shoe_size))
 	number_of_players = how_many_playing()
-	players = create_players(number_of_players, bots)
+	players = create_players(number_of_players, bots, minimum, maximum)
 	dealer = Dealer("", 0, "Dealer", house)
 	dealer.greeting()
 
@@ -540,6 +535,7 @@ def argument_setup(parser):
 		print("Setting maximum table bet to 500")
 		maximum = 500
 
+
 	return SHOE_SIZE, house_rules, bots, minimum, maximum
 
 def connect_to_database():
@@ -562,7 +558,7 @@ def create_tables(connection):
 		CARD2,	TEXT,
 		OUTCOME TEXT);""")
 
-def insert_round(players, connection):
+def insert_round(players, connection):# TODO:does not work with split hands yet
 	""" Insert each player's hand, bet, and outcome into table ROUNDS."""
 	for player in players:
 		connection.execute(
@@ -603,7 +599,7 @@ if __name__ == "__main__":
 	connection = connect_to_database()
 	#connection.execute("""SELECT name FROM sqlite_master WHERE type='table' AND name='table_name';""")
 	create_tables(connection)
-	players, dealer, people = setup(SHOE_SIZE, house_rules, bots)
+	players, dealer, people = setup(SHOE_SIZE, house_rules, bots, minimum, maximum)
 	DECK_SIZE = 52
 	TOTAL_CARDS = SHOE_SIZE * DECK_SIZE
 	shoe = create_shoe(SHOE_SIZE)

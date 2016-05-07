@@ -20,6 +20,7 @@ class Player:
 		else:
 			self._name = n
 		self._cash = c
+		self._start_cash = c
 		self._type = t
 		self._hand = []
 		self._score = 0
@@ -36,6 +37,14 @@ class Player:
 		self._split_hit_count = [0,0]
 		self._outcome = 'None'
 
+	@property
+	def start_cash(self):
+		return self._start_cash
+
+	@start_cash.setter
+	def start_cash(self, c):
+		self._start_cash = c
+	
 	@property
 	def outcome(self):
 		return self._outcome
@@ -171,6 +180,14 @@ class Player:
 	@split.setter
 	def split(self, s):
 		self._split = s
+
+	def place_bet(self, b):
+		self.bet = b
+
+	def double_down(self):
+		print("Double down!")
+		print("{n}'s bet is now: {b}".format(n = self.name, b = self.bet))
+		self.bet = self.bet * 2
 
 	'''def get_score(self):
 		""" Calculate and return score of current hand."""

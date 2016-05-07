@@ -15,8 +15,10 @@ Use the [github issue tracker](https://github.com/pasquantonio/blackjack_termina
 ````bash
 $ git clone https://github.com/pasquantonio/blackjack_terminal_game.git
 $ cd blackjack_terminal_game/
+$ cd src/
 $ chmod +x blackjack.py
 ````
+Note: The last step 'chmod +x blackjack.py' may not be necessary
 
 ## Usage
 Navigate to src/ directory
@@ -37,13 +39,17 @@ optional arguments:
 ````
 
 ## Examples
+To play by yourself with default settings and no bots
+````
+$ ./blackjack.py
+````
 Play with 3 bots
 ````
-$ ./blackjack --bots 3
+$ ./blackjack.py --bots 3
 ````
 Play with 5 bots, minimum bet is 50, maximum bet is 500
 ````
-$ ./blackjack --bots 5 --minimum 50 --maximum 500
+$ ./blackjack.py --bots 5 --minimum 50 --maximum 500
 ````
 
 ## Project Goals

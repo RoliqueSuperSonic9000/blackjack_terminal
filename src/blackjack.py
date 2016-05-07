@@ -12,21 +12,12 @@ from bot_player_class import BotPlayer
 from dealer_class import Dealer
 from deck_class import Deck
 """
-TODO:
-The entire way the game is played from deal to end needs to be inspected and
-corrected
-
-1. Add Different House Rules
-2. Create different BotPlayer Profiles (Strategies)
 3. Better manage the way bots make bets
 6. Save all output strings into variables and replace print statement strings
 with vars this will be for quick fixing and reusability. right now its kind of
 a mess
 7. House Rules Function. -> user can press a key to print out the house rules
-8. Rework the player, botplayer, and dealer class to base class and subclass
-9. Change the exception type on inputs so you can quit the program with ^c
 10. Allow number of players to be input through argparse
-
 
 Colorama HELP:
 Fore: BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET.
@@ -42,15 +33,15 @@ def create_players(p, bots):
 	players = []
 	for i in range(0, p):
 		n, b = get_user_info(i)
-		players.append(Player(n, b, 'Human'))
+		players.append(Player(n, b, "Human"))
 	for i in range(0, bots):
 		entering = True
 		while entering:
 			try:
 				cash = int(
 						raw_input(
-							"Enter starting cash for Bot {num}\
-							(20, 50, 100, 200, 500): ".format(num = i+1)))
+							"Enter starting cash for Bot {num} "
+							"(20, 50, 100, 200, 500): ".format(num = i+1)))
 				if cash in [20, 50, 100, 200, 500]:
 					entering = False
 				else:
@@ -59,7 +50,7 @@ def create_players(p, bots):
 					)
 			except ValueError, e:
 				print("Enter a number please")
-		players.append(BotPlayer("",cash, 'Bot'))
+		players.append(BotPlayer("",cash, "Bot"))
 	return players
 
 def get_user_info(i):
@@ -90,7 +81,6 @@ def show_player_info(players, dealer = None):
 		dealer.show_card()
 	print(pnd*50)
 
-# TODO: better way to iterate list twice aka deal two cards
 def deal(players, shoe):
 	""" Initial deal. Deal Two cards to each player, check for blackjack."""
 	dealer_blackjack = False
@@ -105,7 +95,6 @@ def deal(players, shoe):
 		if player.get_score() == 21:
 			player.blackjack = True
 
-# Rest of Hand after initial deal
 def play(dealer, players, shoe):
 	""" Container for player/dealer turns. Return value from player_turn."""
 	busted = player_turn(dealer, players, shoe)
@@ -294,21 +283,22 @@ def player_turn(dealer, players, shoe):
 					else:
 						print("Invalid. Enter a number 1 - 7")
 			else:
-				player.quick_show()
-				if player.hit():
-					print('{n} hits'.format(n = player.name))
-					card = deal_card(shoe)
-					player.receive_card(card)
-					print("Card: {c}".format(c = card.display))
-					#time.sleep(1)
+				while 1:
 					player.quick_show()
-				if player.check_bust():
-					print("{n} Bust!".format(n = player.name))
-					deciding = False
-				else:
-					player.quick_show()
-					print("{n} stands".format(n = player.name))
-					deciding = False
+					if player.hit():
+						print('{n} hits'.format(n = player.name))
+						card = deal_card(shoe)
+						player.receive_card(card)
+						print("Card: {c}".format(c = card.display))
+						#time.sleep(1)
+						player.quick_show()
+						if player.check_bust():
+							print("{n} Bust!".format(n = player.name))
+							break
+					else:
+						player.quick_show()
+						print("{n} stands".format(n = player.name))
+						break
 	return bust_count
 
 def dealer_turn(players, shoe, bust_count):
@@ -446,7 +436,6 @@ def out_of_money(players):
 	for player in players:
 		if player.cash > 0:
 			keep.append(player)
-			#players.pop(players.index(player))
 		else:
 			print("Player out of money. bye {n}.".format(n = player.name))
 	return keep
@@ -459,8 +448,7 @@ def how_many_playing():
 			number_of_players = int(raw_input(
 										"How many players? (up to 5): ")
 									)
-			# maximum 5 players
-			if number_of_players < 6:
+			if number_of_players < 6: # maximum 5 players
 				deciding = False
 			else:
 				print("Too many players")
@@ -474,7 +462,7 @@ def setup(shoe_size, house, bots):
 	print("Number of decks being used in shoe: {s}".format(s = shoe_size))
 	number_of_players = how_many_playing()
 	players = create_players(number_of_players, bots)
-	dealer = Dealer(house)
+	dealer = Dealer("", 0, "Dealer", house)
 	dealer.greeting()
 
 	people = []
@@ -510,40 +498,10 @@ def deal_card(shoe):
 	""" Pops a card from the shoe to 'deal' to a player."""
 	return shoe.pop(0)
 
-def insert_round(players, connection):
-	for player in players:
-		connection.execute("INSERT INTO ROUNDS (NAME,BET,CARD1,CARD2,OUTCOME) \
-      VALUES ('{n}',{b},'{c1}','{c2}','{o}');".format(
-	  													n=player.name,
-														b=player.bet,
-														c1=player.hand[0].name,
-														c2=player.hand[1].name,
-														o=player.outcome))
-	connection.commit()
-
-# Main Method. Program Starts and Ends Here
-if __name__ == "__main__":
-	""" Game creation, setup and loop contained in here."""
-	parser = argparse.ArgumentParser(description="Blackjack Terminal Game")
-	parser.add_argument(
-				"-s","--shoe", \
-				help="set how many decks used in the shoe", \
-				type=int
-				)
-	parser.add_argument(
-				"--house", \
-				 help="1: Dealer stand on all 17, 2: Dealer hit on soft 17",\
-				 type=int
-				 )
-	parser.add_argument(
-				"-b","--bots", \
-				help="Enter number of bots you want. Up to 5", \
-				type=int
-				)
-	parser.add_argument("--minimum", help="Table Minimum Bet", type=int)
-	parser.add_argument("--maximum", help="Table Maximum Bet", type=int)
+def argument_setup(parser):
+	""" Parse through terminal args and assign variables."""
 	args = parser.parse_args()
-	# assign constants
+
 	if args.shoe:
 		SHOE_SIZE = args.shoe
 	else:
@@ -582,15 +540,20 @@ if __name__ == "__main__":
 		print("Setting maximum table bet to 500")
 		maximum = 500
 
-	#connect to database
+	return SHOE_SIZE, house_rules, bots, minimum, maximum
+
+def connect_to_database():
+	""" Attempt to connect to sqlite database. Return connection object."""
 	try:
 		connection = sqlite3.connect('test_db')
 		print("DB Connected!")
 	except Exception, e:
 		print e
 		sys.exit(1)
+	return connection
 
-	#connection.execute("""SELECT name FROM sqlite_master WHERE type='table' AND name='table_name';""")
+def create_tables(connection):
+	""" Create database tables if they are not yet created."""
 	connection.execute(""" CREATE TABLE IF NOT EXISTS ROUNDS
 		(ID 	INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
 		NAME 	TEXT,
@@ -598,6 +561,48 @@ if __name__ == "__main__":
 		CARD1 	TEXT,
 		CARD2,	TEXT,
 		OUTCOME TEXT);""")
+
+def insert_round(players, connection):
+	""" Insert each player's hand, bet, and outcome into table ROUNDS."""
+	for player in players:
+		connection.execute(
+				"""INSERT INTO ROUNDS (NAME,BET,CARD1,CARD2,OUTCOME)"""
+				"""VALUES ('{n}',{b},'{c1}','{c2}','{o}');"""
+				.format(
+					n=player.name,
+					b=player.bet,
+					c1=player.hand[0].name,
+					c2=player.hand[1].name,
+					o=player.outcome)
+					)
+	connection.commit()
+
+# Main Method. Program Starts and Ends Here
+if __name__ == "__main__":
+	""" Game creation, setup and loop contained in here."""
+	parser = argparse.ArgumentParser(description="Blackjack Terminal Game")
+	parser.add_argument(
+				"-s","--shoe", \
+				help="set how many decks used in the shoe", \
+				type=int
+				)
+	parser.add_argument(
+				"--house", \
+				 help="1: Dealer stand on all 17, 2: Dealer hit on soft 17",\
+				 type=int
+				 )
+	parser.add_argument(
+				"-b","--bots", \
+				help="Enter number of bots you want. Up to 5", \
+				type=int
+				)
+	parser.add_argument("--minimum", help="Table Minimum Bet", type=int)
+	parser.add_argument("--maximum", help="Table Maximum Bet", type=int)
+
+	SHOE_SIZE, house_rules, bots, minimum, maximum = argument_setup(parser)
+	connection = connect_to_database()
+	#connection.execute("""SELECT name FROM sqlite_master WHERE type='table' AND name='table_name';""")
+	create_tables(connection)
 	players, dealer, people = setup(SHOE_SIZE, house_rules, bots)
 	DECK_SIZE = 52
 	TOTAL_CARDS = SHOE_SIZE * DECK_SIZE
@@ -608,11 +613,11 @@ if __name__ == "__main__":
 	####################################
 	reshuffle_count = 0
 	end_game = False
-	round = 0
+	round_num = 0
 	while not end_game:
-		round = round + 1
+		round_num = round_num + 1
 		print("*******************Round {r}**********************"\
-				.format(r = round))
+				.format(r = round_num))
 		if len(shoe) < TOTAL_CARDS/2:
 			print("Dealer Reshuffling Shoe!")
 			#time.sleep(2)

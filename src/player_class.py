@@ -1,9 +1,17 @@
 from random import randint
 from colorama import init, Fore, Back, Style
 
+"""
+Player Class
+"""
 class Player:
 
-	name_list = ['Muffin','Poop','Fartface','Daipy','Turd','Cake','Skunk']
+	name_list = [
+					'Muffin','Poop','Fartface',
+					'Daipy','Turd','Cake',
+					'Skunk','Paul','George',
+					'John','Ringo'
+				]
 
 	def __init__(self, n, c, t):
 		if n == "":
@@ -164,7 +172,7 @@ class Player:
 	def split(self, s):
 		self._split = s
 
-	def get_score(self):
+	'''def get_score(self):
 		""" Calculate and return score of current hand."""
 		self.score = 0
 		ace = False
@@ -176,6 +184,25 @@ class Player:
 				if ace:
 					self.score = self.score - 10
 					ace = False
+		return self.score
+	'''
+	def get_score(self):
+		score = 0
+		high_ace_count = 0
+		#count aces in hand
+		for card in self.hand:
+			if card.value == 11:
+				high_ace_count = high_ace_count + 1
+			score = score + card.value
+		while high_ace_count > 0 and score > 21:
+			for card in self.hand:
+				if card.value == 11:
+					card.value = 1
+					high_ace_count = high_ace_count - 1
+				score = score - 10
+				if score <= 21:
+					break
+		self.score = score
 		return self.score
 
 	def get_split_score(self):

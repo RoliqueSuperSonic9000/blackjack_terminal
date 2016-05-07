@@ -36,7 +36,7 @@ Style: DIM, NORMAL, BRIGHT, RESET_ALL
 """
 # Global Game Functions
 """
-# create the players
+
 def create_players(p, bots):
 	""" Create and append players and bots and return list of players."""
 	players = []
@@ -62,7 +62,6 @@ def create_players(p, bots):
 		players.append(BotPlayer("",cash, 'Bot'))
 	return players
 
-# ask user for name and buy in amount
 def get_user_info(i):
 	""" Get Name and Starting Cash from player and Return."""
 	buy_in_list = [20,50,100,200,500]
@@ -82,7 +81,6 @@ def get_user_info(i):
 			choosing = False
 	return name, buy
 
-# output player info to console
 def show_player_info(players, dealer = None):
 	""" Print each player's information to the console."""
 	pnd = '#'

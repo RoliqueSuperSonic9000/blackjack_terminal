@@ -7,12 +7,12 @@ class BotPlayer(Player):
 
 	# These could be made into dictionaries
 	hand_strategies = [1, 2, 3]
+	bet_strategies = [1, 2, 3]
 	hand_strategy_names =[
 		"Stand on all 12 or greater",
 		"Stand on all 17 or greater",
 		"Hit on soft 17"
 	]
-	bet_strategies = [1, 2, 3]
 	bet_strategy_names =[
 		"Raise bets after wins",
 		"Raise bets after losses",
@@ -38,11 +38,13 @@ class BotPlayer(Player):
 			self._bet_strategy = BotPlayer \
 								.bet_strategies \
 								[randint(0, len(BotPlayer.bet_strategies)-1)]
-		#self._bet_strategy_name = BotPlayer \
-		#						.bet_strategy_names[self.bet_strategy-1]
+		self._bet_strategy_name = BotPlayer \
+								.bet_strategy_names[self.bet_strategy-1]
 		self._round_bet_history = []
 		self._round_outcome_history = []
-
+		self._round_cash_history = []
+		self._highest_cash = c
+		self._highest_bet = 0
 
 	@property
 	def min_bet(self):
@@ -73,7 +75,7 @@ class BotPlayer(Player):
 		self._bet_strategy = b
 
 	@property
-	def bet_strategy_names(self):
+	def bet_strategy_name(self):
 		return self._bet_strategy_name
 
 	@property
@@ -92,15 +94,57 @@ class BotPlayer(Player):
 	def round_outcome_history(self, o):
 		self._round_outcome_history = o
 
+	@property
+	def round_cash_history(self):
+		return self._round_cash_history
+
+	@round_cash_history.setter
+	def round_cash_history(self, c):
+		self._round_cash_history = c
+
+	def highest_bet(self):
+		maximum = 0
+		for bet in self.round_bet_history:
+			if bet > maximum:
+				maximum = bet
+		self._highest_bet = maximum
+		return self._highest_bet
+
+	def highest_cash(self):
+		maximum = 0
+		for cash in self.round_cash_history:
+			if cash > maximum:
+				maximum = cash
+		self._highest_cash = maximum
+		return self._highest_cash
+
+	def out_of_money(self):
+		self.highest_cash()
+		self.highest_bet()
+
+	def end_game_stats(self):
+		print("-"*25)
+		print("{n}:".format(n = self.name))
+		print("Hand Strategy: {h}".format(h = self.hand_strategy_name))
+		print("Bet Strategy: {s}".format(s = self.bet_strategy_name))
+		print("Rounds played: {r}".format(r = len(self.round_bet_history)))
+		print("Highest Bet made: {b}".format(b = self.highest_bet()))
+		print("Highest Cash: {c}".format(c = self.highest_cash()))
+		print("-"*25)
+
 	def raise_bet_after_win(self):
 		if self.previous_round_win():
 			self.bet = self.round_bet_history[-1] * 2
+			if self.bet > self.cash:
+				self.bet = self.cash
 		else:
 			self.bet = self.min_bet
 
 	def raise_bet_after_loss(self):
 		if not self.previous_round_win():
 			self.bet = self.round_bet_history[-1] * 2
+			if self.bet > self.cash:
+				self.bet = self.cash
 		else:
 			self.bet = self.min_bet
 
@@ -119,9 +163,10 @@ class BotPlayer(Player):
 	def previous_round_bet(self):
 		return self.round_bet_history[-1]
 
-	def add_round(self, o, b):
+	def add_round(self, o, b, c):
 		self.round_outcome_history.append(o)
 		self.round_bet_history.append(b)
+		self.round_cash_history.append(c)
 
 	def lose(self):
 		""" Subtract the player's bet from the player's cash total."""
@@ -129,7 +174,7 @@ class BotPlayer(Player):
 		print(Fore.WHITE)
 		self.cash = self.cash - self.bet
 		self.outcome = "Lose"
-		self.add_round(self.outcome, self.bet)
+		self.add_round(self.outcome, self.bet, self.cash)
 
 	def win(self):
 		""" Add the player's bet to the player's cash total."""
@@ -137,21 +182,21 @@ class BotPlayer(Player):
 		print(Fore.WHITE)
 		self.cash = self.cash + self.bet
 		self.outcome = "Win"
-		self.add_round(self.outcome, self.bet)
+		self.add_round(self.outcome, self.bet, self.cash)
 
 	def tie(self):
 		""" Alert the player they have tied the dealer."""
 		print(Fore.BLUE + "{n} ties.".format(n = self.name))
 		print(Fore.WHITE)
 		self.outcome = "Tie"
-		self.add_round(self.outcome, self.bet)
+		self.add_round(self.outcome, self.bet, self.cash)
 
 	def blackjack_win(self):
 		""" Add the players bet plus 1/2 bet to the player's cash total."""
 		print("{n} Blackjack!".format(n = self.name))
 		self.cash = self.cash + (self.bet * 1.5)
 		self.outcome = "Win"
-		self.add_round(self.outcome, self.bet)
+		self.add_round(self.outcome, self.bet, self.cash)
 
 	def place_bet(self):
 		""" Bot place bet amount for next hand."""
@@ -183,7 +228,8 @@ class BotPlayer(Player):
 		print("Bet:  {b}".format(b = self.bet))
 		print("Hand: {h}".format(h = [card.display for card in self.hand]))
 		print("Count: {c}".format(c = self.get_score()))
-		print("Strategy: {s}".format(s = self.hand_strategy_name))
+		print("Hand Strategy: {s}".format(s = self.hand_strategy_name))
+		print("Bet Strategy: {b}".format(b = self.bet_strategy_name))
 		print("Next Move: {m}".format(m = self.next_move()))
 		print(tick*20)
 

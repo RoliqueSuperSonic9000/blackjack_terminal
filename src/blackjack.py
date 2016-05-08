@@ -16,7 +16,6 @@ from deck_class import Deck
 with vars this will be for quick fixing and reusability. right now its kind of
 a mess
 7. House Rules Function. -> user can press a key to print out the house rules
-10. Allow number of players to be input through argparse
 
 Colorama HELP:
 Fore: BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET.
@@ -40,8 +39,9 @@ def create_players(p, bots, minimum, maximum):
 				cash = int(
 						raw_input(
 							"Enter starting cash for Bot {num} "
-							"(20, 50, 100, 200, 500): ".format(num = i+1)))
-				if cash in [20, 50, 100, 200, 500]:
+							"(20, 50, 100, 200, 500, 1000, 2000): "
+							.format(num = i+1)))
+				if cash in [20, 50, 100, 200, 500, 1000, 2000]:
 					entering = False
 				else:
 					print(
@@ -380,6 +380,9 @@ def intro_msg():
 	print(pnd*50)
 	print(pnd*50 + Fore.WHITE)
 
+def show_table_rules():
+	pass
+
 def place_bets(players, minimum, maximum):
 	""" Prompt user to input their bet for the next hand."""
 	for player in players:
@@ -391,6 +394,7 @@ def place_bets(players, minimum, maximum):
 			print("Type 'd' or 'done' to cash out.")
 			print("Type 'i' or 'info' to see your information")
 			print("Type 's' to show all player information")
+			print("Type 'h' to see table rules")
 			try:
 				bet = raw_input("{n} place your bet: "\
 									.format(n = player.name))
@@ -405,6 +409,9 @@ def place_bets(players, minimum, maximum):
 					continue
 				elif 's' in bet:
 					show_player_info(players)
+					continue
+				elif 'h' in bet:
+					show_table_rules()
 					continue
 				else:
 					bet = int(bet)
@@ -425,13 +432,15 @@ def place_bets(players, minimum, maximum):
 				print("Can't do that bet.")
 	return players
 
-def out_of_money(players):
+def out_of_money(players, out):
 	""" Check if any player's have 0 cash and remove then from the game."""
 	keep = []
 	for player in players:
 		if player.cash > 0:
 			keep.append(player)
 		else:
+			player.out_of_money()
+			out.append(player)
 			print("Player out of money. bye {n}.".format(n = player.name))
 	return keep
 
@@ -451,12 +460,12 @@ def how_many_playing():
 			print("Please enter a number")
 	return number_of_players
 
-def setup(shoe_size, house, bots, minimum, maximum):
+def setup(shoe_size, house, player_count, bots, minimum, maximum):
 	""" Print welcome info and create players, bots, and dealer."""
 	intro_msg()
 	print("Number of decks being used in shoe: {s}".format(s = shoe_size))
-	number_of_players = how_many_playing()
-	players = create_players(number_of_players, bots, minimum, maximum)
+	#number_of_players = how_many_playing()
+	players = create_players(player_count, bots, minimum, maximum)
 	dealer = Dealer("", 0, "Dealer", house)
 	dealer.greeting()
 
@@ -497,6 +506,20 @@ def argument_setup(parser):
 	""" Parse through terminal args and assign variables."""
 	args = parser.parse_args()
 
+	if args.players:
+		if args.players + args.bots > 5:
+			print("Can only play with at most 5 players and bots")
+			while 1:
+				try:
+					players = int(raw_input("Enter number of players: "))
+				except:
+					print("Enter a number")
+				break
+		else:
+			players = args.players
+	else:
+		players = 0
+
 	if args.shoe:
 		SHOE_SIZE = args.shoe
 	else:
@@ -505,38 +528,37 @@ def argument_setup(parser):
 	if args.house:
 		house_rules = args.house
 	else:
-		house_rules = 1 # default house rules as of right now
+		house_rules = 1
 
 	if args.bots:
 		if args.bots > 5:
 			print("Can only play with at most 5 bots.")
-			entering = True
-			while entering:
+			while 1:
 				try:
 					bots = int(raw_input("Enter number of bots: "))
 				except ValueError, e:
 					print("Enter a number")
+				break
 		else:
 			bots = args.bots
 	else:
 		bots = 0
 
-	if args.minimum in [10, 20, 50, 100]:
+	if args.minimum:
 		minimum = args.minimum
 	else:
 		print("Minimum table bet must be in [10, 20, 50, 100]")
 		print("Setting minimum table bet to 10")
 		minimum = 10
 
-	if args.maximum in [10, 20, 50, 100, 500, 1000]:
+	if args.maximum:
 		maximum = args.maximum
 	else:
 		print("Maximum table bet must be in [10, 20, 50, 100, 500, 1000]")
 		print("Setting maximum table bet to 500")
-		maximum = 500
+		maximum = 10000
 
-
-	return SHOE_SIZE, house_rules, bots, minimum, maximum
+	return SHOE_SIZE, house_rules, players, bots, minimum, maximum
 
 def connect_to_database():
 	""" Attempt to connect to sqlite database. Return connection object."""
@@ -561,45 +583,53 @@ def create_tables(connection):
 def insert_round(players, connection):# TODO:does not work with split hands yet
 	""" Insert each player's hand, bet, and outcome into table ROUNDS."""
 	for player in players:
-		connection.execute(
+		if not player.split:
+			connection.execute(
 				"""INSERT INTO ROUNDS (NAME,BET,CARD1,CARD2,OUTCOME)"""
 				"""VALUES ('{n}',{b},'{c1}','{c2}','{o}');"""
-				.format(
-					n=player.name,
-					b=player.bet,
-					c1=player.hand[0].name,
-					c2=player.hand[1].name,
-					o=player.outcome)
-					)
+					.format(
+						n=player.name,
+						b=player.bet,
+						c1=player.hand[0].name,
+						c2=player.hand[1].name,
+						o=player.outcome)
+			)
 	connection.commit()
 
 # Main Method. Program Starts and Ends Here
 if __name__ == "__main__":
 	""" Game creation, setup and loop contained in here."""
-	parser = argparse.ArgumentParser(description="Blackjack Terminal Game")
+	parser = argparse.ArgumentParser(
+		description="Blackjack Terminal: A game for fun or a simulator"
+		" for putting strategies to the test"
+	)
 	parser.add_argument(
-				"-s","--shoe", \
-				help="set how many decks used in the shoe", \
-				type=int
-				)
+		"-p","--players",
+		help="Number of Human players",
+		type=int
+	)
 	parser.add_argument(
-				"--house", \
-				 help="1: Dealer stand on all 17, 2: Dealer hit on soft 17",\
-				 type=int
-				 )
+		"-s","--shoe",
+		help="set how many decks used in the shoe",
+		type=int
+	)
 	parser.add_argument(
-				"-b","--bots", \
-				help="Enter number of bots you want. Up to 5", \
-				type=int
-				)
+		"--house",
+		help="1: Dealer stand on all 17, 2: Dealer hit on soft 17",
+		type=int
+	)
+	parser.add_argument(
+		"-b","--bots",
+		help="Enter number of bots you want. Up to 5",
+		type=int
+	)
 	parser.add_argument("--minimum", help="Table Minimum Bet", type=int)
 	parser.add_argument("--maximum", help="Table Maximum Bet", type=int)
 
-	SHOE_SIZE, house_rules, bots, minimum, maximum = argument_setup(parser)
+	SHOE_SIZE, house_rules, player_count, bots, minimum, maximum = argument_setup(parser)
 	connection = connect_to_database()
-	#connection.execute("""SELECT name FROM sqlite_master WHERE type='table' AND name='table_name';""")
 	create_tables(connection)
-	players, dealer, people = setup(SHOE_SIZE, house_rules, bots, minimum, maximum)
+	players, dealer, people = setup(SHOE_SIZE, house_rules, player_count, bots, minimum, maximum)
 	DECK_SIZE = 52
 	TOTAL_CARDS = SHOE_SIZE * DECK_SIZE
 	shoe = create_shoe(SHOE_SIZE)
@@ -610,6 +640,7 @@ if __name__ == "__main__":
 	reshuffle_count = 0
 	end_game = False
 	round_num = 0
+	out = []
 	while not end_game:
 		round_num = round_num + 1
 		print("*******************Round {r}**********************"\
@@ -627,10 +658,13 @@ if __name__ == "__main__":
 			win_lose(dealer, players, busted)
 			insert_round(players, connection)
 			reset(people)
-			players = out_of_money(players)
+			players = out_of_money(players, out)
 		else:
 			print("No players left. Game over.")
 			print("reshuffle count: {c}".format(c = reshuffle_count))
+			print("Player Stats For Game")
+			for player in out:
+				player.end_game_stats()
 			end_game = True
 			continue
 

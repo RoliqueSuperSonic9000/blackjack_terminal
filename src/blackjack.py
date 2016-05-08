@@ -208,7 +208,9 @@ def player_turn(dealer, players, shoe):
 						card = deal_card(shoe)
 						player.receive_card(card)
 						print("Card: {c}".format(c = card.display))
-						#time.sleep(1)
+						print WAIT_TIME
+						if WAIT_TIME > 0:
+							time.sleep(WAIT_TIME)
 						if player.check_bust():
 							print("{n} Busts!".format(n = player.name))
 							bust_count = bust_count + 1
@@ -283,7 +285,9 @@ def player_turn(dealer, players, shoe):
 						card = deal_card(shoe)
 						player.receive_card(card)
 						print("Card: {c}".format(c = card.display))
-						#time.sleep(1)
+						print WAIT_TIME
+						if WAIT_TIME > 0:
+							time.sleep(WAIT_TIME)
 						player.quick_show()
 						if player.check_bust():
 							print("{n} Bust!".format(n = player.name))
@@ -304,7 +308,9 @@ def dealer_turn(players, shoe, bust_count):
 			card = deal_card(shoe)
 			dealer.receive_card(card)
 			print("Card: {c}".format(c = card.display))
-			#time.sleep(1)
+			print WAIT_TIME
+			if WAIT_TIME > 0:
+				time.sleep(WAIT_TIME)
 			dealer.quick_show()
 			if dealer.check_bust():
 				print("Dealer Bust!")
@@ -541,6 +547,17 @@ def argument_setup(parser):
 	else:
 		bots = 0
 
+	global WAIT_TIME #messy code
+	if args.time:
+		WAIT_TIME = args.time
+	elif args.time == 0:
+		WAIT_TIME = args.time
+	else:
+		if players == 0:
+			WAIT_TIME = 0
+		else:
+			WAIT_TIME = 1.5
+
 	if args.minimum:
 		minimum = args.minimum
 	else:
@@ -555,6 +572,10 @@ def argument_setup(parser):
 		print("Setting maximum table bet to 500")
 		maximum = 10000
 
+	if bots + players == 0:
+		print("Usage: ./blackjack --players 1 --bots 2")
+		print("Enter number of players and bots through command line")
+		sys.exit(1)
 	return SHOE_SIZE, house_rules, players, bots, minimum, maximum
 
 def connect_to_database():
@@ -620,6 +641,12 @@ if __name__ == "__main__":
 		help="Enter number of bots you want. Up to 7",
 		type=int
 	)
+	parser.add_argument(
+		"-t","--time",
+		help="Wait time for actions such as deal cards, hit, stand, etc"
+			". For simulations do 0, for you playing do 1.5",
+		type=int
+	)
 	parser.add_argument("--minimum", help="Table Minimum Bet", type=int)
 	parser.add_argument("--maximum", help="Table Maximum Bet", type=int)
 
@@ -644,7 +671,9 @@ if __name__ == "__main__":
 				.format(r = round_num))
 		if len(shoe) < TOTAL_CARDS/2:
 			print("Dealer Reshuffling Shoe!")
-			#time.sleep(2)
+			print WAIT_TIME
+			if WAIT_TIME > 0:
+				time.sleep(WAIT_TIME)
 			shoe = create_shoe(SHOE_SIZE)
 			reshuffle_count = reshuffle_count + 1
 		players = place_bets(players, dealer, minimum, maximum)
@@ -658,8 +687,8 @@ if __name__ == "__main__":
 			players = out_of_money(players, out)
 		else:
 			print("No players left. Game over.")
+			print("PostGame Statistics")
 			print("reshuffle count: {c}".format(c = reshuffle_count))
-			print("Player Stats For Game")
 			for player in out:
 				player.end_game_stats()
 			end_game = True

@@ -208,7 +208,6 @@ def player_turn(dealer, players, shoe):
 						card = deal_card(shoe)
 						player.receive_card(card)
 						print("Card: {c}".format(c = card.display))
-						print WAIT_TIME
 						if WAIT_TIME > 0:
 							time.sleep(WAIT_TIME)
 						if player.check_bust():
@@ -285,7 +284,6 @@ def player_turn(dealer, players, shoe):
 						card = deal_card(shoe)
 						player.receive_card(card)
 						print("Card: {c}".format(c = card.display))
-						print WAIT_TIME
 						if WAIT_TIME > 0:
 							time.sleep(WAIT_TIME)
 						player.quick_show()
@@ -308,7 +306,6 @@ def dealer_turn(players, shoe, bust_count):
 			card = deal_card(shoe)
 			dealer.receive_card(card)
 			print("Card: {c}".format(c = card.display))
-			print WAIT_TIME
 			if WAIT_TIME > 0:
 				time.sleep(WAIT_TIME)
 			dealer.quick_show()
@@ -510,14 +507,31 @@ def argument_setup(parser):
 	args = parser.parse_args()
 
 	if args.players:
-		if args.players + args.bots > 7:
+		if args.bots:
+			if args.players + args.bots > 7:
+				print("Can only play with at most 7 players and bots")
+				while 1:
+					try:
+						players = int(raw_input("Enter number of players: "))
+					except ValueError, e:
+						print("Enter a number")
+					if players + args.bots > 7:
+						print("Still too many players & bots.")
+					else:
+						break
+			else:
+				players = args.players
+		elif args.players > 7:
 			print("Can only play with at most 7 players and bots")
 			while 1:
 				try:
 					players = int(raw_input("Enter number of players: "))
-				except:
+				except ValueError, e:
 					print("Enter a number")
-				break
+				if players > 7:
+					print("Still too many players & bots.")
+				else:
+					break
 		else:
 			players = args.players
 	else:
@@ -534,14 +548,31 @@ def argument_setup(parser):
 		house_rules = 1
 
 	if args.bots:
-		if args.bots + players > 7:
-			print("Can only play with at most 7 players & bots.")
+		if args.players:
+			if args.bots + args.players > 7:
+				print("Can only play with at most 7 players and bots")
+				while 1:
+					try:
+						bots = int(raw_input("Enter number of bots: "))
+					except ValueError, e:
+						print("Enter a number")
+					if bots + players > 7:
+						print("Still too many players & bots.")
+					else:
+						break
+			else:
+				bots = args.bots
+		elif args.bots > 7:
+			print("Can only play with at most 7 players and bots")
 			while 1:
 				try:
-					bots = int(raw_input("Enter number of bots: "))
+					bots = int(raw_input("Enter number of players: "))
 				except ValueError, e:
 					print("Enter a number")
-				break
+				if bots > 7:
+					print("Still too many players & bots.")
+				else:
+					break
 		else:
 			bots = args.bots
 	else:
@@ -671,7 +702,7 @@ if __name__ == "__main__":
 				.format(r = round_num))
 		if len(shoe) < TOTAL_CARDS/2:
 			print("Dealer Reshuffling Shoe!")
-			print WAIT_TIME
+
 			if WAIT_TIME > 0:
 				time.sleep(WAIT_TIME)
 			shoe = create_shoe(SHOE_SIZE)

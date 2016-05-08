@@ -20,9 +20,7 @@ class BotPlayer(Player):
 	]
 
 	def __init__(self, n, c, t, tbl_min, tbl_max,s=None, bs=None):
-		Player.__init__(self, n, c, t)
-		self._min_bet = tbl_min
-		self._max_bet = tbl_max
+		Player.__init__(self, n, c, t, tbl_min, tbl_max)
 		if s is not None:
 			self._hand_strategy = s
 		else:
@@ -40,19 +38,6 @@ class BotPlayer(Player):
 								[randint(0, len(BotPlayer.bet_strategies)-1)]
 		self._bet_strategy_name = BotPlayer \
 								.bet_strategy_names[self.bet_strategy-1]
-		self._round_bet_history = []
-		self._round_outcome_history = []
-		self._round_cash_history = []
-		self._highest_cash = c
-		self._highest_bet = 0
-
-	@property
-	def min_bet(self):
-		return self._min_bet
-
-	@property
-	def max_bet(self):
-		return self._max_bet
 
 	@property
 	def hand_strategy(self):
@@ -77,50 +62,6 @@ class BotPlayer(Player):
 	@property
 	def bet_strategy_name(self):
 		return self._bet_strategy_name
-
-	@property
-	def round_bet_history(self):
-		return self._round_bet_history
-
-	@round_bet_history.setter
-	def round_bet_history(self, b):
-		self._round_bet_history = b
-
-	@property
-	def round_outcome_history(self):
-		return self._round_outcome_history
-
-	@round_outcome_history.setter
-	def round_outcome_history(self, o):
-		self._round_outcome_history = o
-
-	@property
-	def round_cash_history(self):
-		return self._round_cash_history
-
-	@round_cash_history.setter
-	def round_cash_history(self, c):
-		self._round_cash_history = c
-
-	def highest_bet(self):
-		maximum = 0
-		for bet in self.round_bet_history:
-			if bet > maximum:
-				maximum = bet
-		self._highest_bet = maximum
-		return self._highest_bet
-
-	def highest_cash(self):
-		maximum = 0
-		for cash in self.round_cash_history:
-			if cash > maximum:
-				maximum = cash
-		self._highest_cash = maximum
-		return self._highest_cash
-
-	def out_of_money(self):
-		self.highest_cash()
-		self.highest_bet()
 
 	def end_game_stats(self):
 		print("-"*25)

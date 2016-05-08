@@ -6,9 +6,14 @@ Dealer Class
 """
 class Dealer(Player):
 
+	house_rule_names =[
+		"Dealer stand on all 17",
+		"Dealer hit on soft 17"
+	]
 	def __init__(self, n, c, t, h):
-		Player.__init__(self, n, c, t)
+		Player.__init__(self, n, c, t, 0, 0)
 		self._house = h
+		self._house_rule_name = Dealer.house_rule_names[self.house-1]
 
 	@property
 	def house(self):
@@ -17,6 +22,10 @@ class Dealer(Player):
 	@house.setter
 	def house(self, h):
 		self._house = h
+
+	@property
+	def house_rule_name(self):
+		return self._house_rule_name
 
 	def greeting(self):
 		""" Print Dealer greeting to console."""

@@ -12,9 +12,6 @@ from bot_player_class import BotPlayer
 from dealer_class import Dealer
 from deck_class import Deck
 """
-6. Save all output strings into variables and replace print statement strings
-with vars this will be for quick fixing and reusability. right now its kind of
-a mess
 7. House Rules Function. -> user can press a key to print out the house rules
 
 Colorama HELP:
@@ -31,7 +28,7 @@ def create_players(p, bots, minimum, maximum):
 	players = []
 	for i in range(0, p):
 		n, b = get_user_info(i)
-		players.append(Player(n, b, "Human"))
+		players.append(Player(n, b, "Human", minimum, maximum))
 	for i in range(0, bots):
 		entering = True
 		while entering:
@@ -54,13 +51,13 @@ def create_players(p, bots, minimum, maximum):
 
 def get_user_info(i):
 	""" Get Name and Starting Cash from player and Return."""
-	buy_in_list = [20,50,100,200,500]
+	buy_in_list = [20,50,100,200,500, 1000, 2000]
 	name = raw_input("Enter player {number}'s name: ".format(number = i+1))
 	choosing = True
 	while choosing:
 		try:
 			buy = int(
-					raw_input("Select Starting Cash: 20, 50, 100, 200, 500? ")
+					raw_input("Select Starting Cash: 20, 50, 100, 200, 500, 1000, 2000: ")
 					)
 		except ValueError, e:
 			print("Invalid. Choose one of the above")
@@ -380,10 +377,10 @@ def intro_msg():
 	print(pnd*50)
 	print(pnd*50 + Fore.WHITE)
 
-def show_table_rules():
-	pass
+def show_table_rules(dealer):
+	print(dealer.house_rule_name)
 
-def place_bets(players, minimum, maximum):
+def place_bets(players, dealer, minimum, maximum):
 	""" Prompt user to input their bet for the next hand."""
 	for player in players:
 		if player.type == "Bot":
@@ -411,7 +408,7 @@ def place_bets(players, minimum, maximum):
 					show_player_info(players)
 					continue
 				elif 'h' in bet:
-					show_table_rules()
+					show_table_rules(dealer)
 					continue
 				else:
 					bet = int(bet)
@@ -450,7 +447,7 @@ def how_many_playing():
 	while deciding:
 		try:
 			number_of_players = int(raw_input(
-										"How many players? (up to 5): ")
+										"How many players? (up to 7): ")
 									)
 			if number_of_players < 6: # maximum 5 players
 				deciding = False
@@ -507,8 +504,8 @@ def argument_setup(parser):
 	args = parser.parse_args()
 
 	if args.players:
-		if args.players + args.bots > 5:
-			print("Can only play with at most 5 players and bots")
+		if args.players + args.bots > 7:
+			print("Can only play with at most 7 players and bots")
 			while 1:
 				try:
 					players = int(raw_input("Enter number of players: "))
@@ -531,8 +528,8 @@ def argument_setup(parser):
 		house_rules = 1
 
 	if args.bots:
-		if args.bots > 5:
-			print("Can only play with at most 5 bots.")
+		if args.bots + players > 7:
+			print("Can only play with at most 7 players & bots.")
 			while 1:
 				try:
 					bots = int(raw_input("Enter number of bots: "))
@@ -620,7 +617,7 @@ if __name__ == "__main__":
 	)
 	parser.add_argument(
 		"-b","--bots",
-		help="Enter number of bots you want. Up to 5",
+		help="Enter number of bots you want. Up to 7",
 		type=int
 	)
 	parser.add_argument("--minimum", help="Table Minimum Bet", type=int)
@@ -650,7 +647,7 @@ if __name__ == "__main__":
 			#time.sleep(2)
 			shoe = create_shoe(SHOE_SIZE)
 			reshuffle_count = reshuffle_count + 1
-		players = place_bets(players, minimum, maximum)
+		players = place_bets(players, dealer, minimum, maximum)
 		if players:
 			deal(people, shoe)
 			show_player_info(players, dealer)

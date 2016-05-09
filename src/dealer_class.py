@@ -1,9 +1,9 @@
-from random import randint
+from player_class import Player, randint
 
-from player_class import Player
 """
 Dealer Class
 """
+
 class Dealer(Player):
 
 	house_rule_names =[
@@ -69,7 +69,5 @@ class Dealer(Player):
 		self.get_score()
 		if self.house == 1:
 			return self.stand_on_all_17()
-		elif self.house == 2:
+		if self.house == 2:
 			return self.hit_on_soft_17()
-		else:
-			return False # place holder for now

@@ -4,10 +4,11 @@ Card Class
 class Card(object):
 
 	suits  = ['Clubs','Diamonds','Hearts','Spades']
-	ranks = {'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10, 'JACK':10,'QUEEN':10,'KING':10,'ACE':11}
-	# For testing
-	#ranks = {'2':2,'3':2,'4':2,'5':2,'6':2,'7':2,'8':2,'9':2,'10':2, 'JACK':2,'QUEEN':2,'KING':2,'ACE':2}
-	#ranks = {'2':10,'3':10,'4':10,'5':10,'6':10,'7':10,'8':10,'9':10,'10':10, 'JACK':11,'QUEEN':11,'KING':11,'ACE':11}
+	ranks = {
+		'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,
+		'10':10, 'JACK':10,'QUEEN':10,'KING':10,'ACE':11
+	}
+	
 	def __init__(self, suit, rank):
 		self._suit = suit
 		self._rank = rank

@@ -3,26 +3,16 @@
 import sqlite3
 import argparse
 import sys
-from colorama import init, Fore, Back, Style
 import time
-from random import randint
 
-from player_class import Player
+from player_class import Player, Fore, randint
 from bot_player_class import BotPlayer
 from dealer_class import Dealer
 from deck_class import Deck
-"""
-7. House Rules Function. -> user can press a key to print out the house rules
 
-Colorama HELP:
-Fore: BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET.
-Back: BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET.
-Style: DIM, NORMAL, BRIGHT, RESET_ALL
 """
+Global Game Functions
 """
-# Global Game Functions
-"""
-
 def create_players(p, bots, minimum, maximum):
 	""" Create and append players and bots and return list of players."""
 	players = []
@@ -57,7 +47,8 @@ def get_user_info(i):
 	while choosing:
 		try:
 			buy = int(
-					raw_input("Select Starting Cash: 20, 50, 100, 200, 500, 1000, 2000: ")
+					raw_input("Select Starting Cash: 20, 50, 100, 200, "
+													"500, 1000, 2000: ")
 					)
 		except ValueError, e:
 			print("Invalid. Choose one of the above")
@@ -248,7 +239,8 @@ def player_turn(dealer, players, shoe):
 							print("You've already hit, cannot double down.")
 					elif action == 5: #SURRENDER
 						if player.hit_count == 0:
-							print("{n} surrender's hand.".format(n = player.name))
+							print("{n} surrender's hand.".\
+											format(n = player.name))
 							tmp = player.bet/2
 							player.cash = player.cash - tmp
 							player.surrender = True
@@ -380,8 +372,14 @@ def intro_msg():
 	print(pnd*50)
 	print(pnd*50 + Fore.WHITE)
 
-def show_table_rules(dealer):
-	print(dealer.house_rule_name)
+def show_table_rules(dealer, minimum, maximum):
+	""" Print the house rules to the console"""
+	print('+'*25)
+	print("House Rules:")
+	print("Dealer play: {p}".format(p = dealer.house_rule_name))
+	print("Minimum Bet: {m}".format(m = minimum))
+	print("Maximum Bet: {m}".format(m = maximum))
+	print('+'*25)
 
 def place_bets(players, dealer, minimum, maximum):
 	""" Prompt user to input their bet for the next hand."""
@@ -411,7 +409,7 @@ def place_bets(players, dealer, minimum, maximum):
 					show_player_info(players)
 					continue
 				elif 'h' in bet:
-					show_table_rules(dealer)
+					show_table_rules(dealer, minimum, maximum)
 					continue
 				else:
 					bet = int(bet)
@@ -629,7 +627,7 @@ def create_tables(connection):
 		CARD2,	TEXT,
 		OUTCOME TEXT);""")
 
-def insert_round(players, connection):# TODO:does not work with split hands yet
+def insert_round(players, connection):
 	""" Insert each player's hand, bet, and outcome into table ROUNDS."""
 	for player in players:
 		if not player.split:
@@ -641,6 +639,27 @@ def insert_round(players, connection):# TODO:does not work with split hands yet
 						b=player.bet,
 						c1=player.hand[0].name,
 						c2=player.hand[1].name,
+						o=player.outcome)
+			)
+		else:
+			connection.execute(
+				"""INSERT INTO ROUNDS (NAME,BET,CARD1,CARD2,OUTCOME)"""
+				"""VALUES ('{n}',{b},'{c1}','{c2}','{o}');"""
+					.format(
+						n=player.name,
+						b=player.split_bet[0],
+						c1=player.hand[0][0].name,
+						c2=player.hand[0][1].name,
+						o=player.outcome)
+			)
+			connection.execute(
+				"""INSERT INTO ROUNDS (NAME,BET,CARD1,CARD2,OUTCOME)"""
+				"""VALUES ('{n}',{b},'{c1}','{c2}','{o}');"""
+					.format(
+						n=player.name,
+						b=player.split_bet[1],
+						c1=player.hand[1][0].name,
+						c2=player.hand[1][1].name,
 						o=player.outcome)
 			)
 	connection.commit()
@@ -675,16 +694,20 @@ if __name__ == "__main__":
 	parser.add_argument(
 		"-t","--time",
 		help="Wait time for actions such as deal cards, hit, stand, etc"
-			". For simulations do 0, for you playing do 1.5",
+			". For simulations do 0, for humans playing do 1.5",
 		type=int
 	)
 	parser.add_argument("--minimum", help="Table Minimum Bet", type=int)
 	parser.add_argument("--maximum", help="Table Maximum Bet", type=int)
 
-	SHOE_SIZE, house_rules, player_count, bots, minimum, maximum = argument_setup(parser)
+	SHOE_SIZE, house_rules, player_count, bots, minimum, maximum = \
+													argument_setup(parser)
 	connection = connect_to_database()
 	create_tables(connection)
-	players, dealer, people = setup(SHOE_SIZE, house_rules, player_count, bots, minimum, maximum)
+	players, dealer, people = setup(
+								SHOE_SIZE, house_rules, player_count,
+								bots, minimum, maximum
+								)
 	DECK_SIZE = 52
 	TOTAL_CARDS = SHOE_SIZE * DECK_SIZE
 	shoe = create_shoe(SHOE_SIZE)

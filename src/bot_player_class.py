@@ -5,7 +5,6 @@ from player_class import Player, randint, Fore
 
 class BotPlayer(Player):
 
-	# These could be made into dictionaries
 	hand_strategies = [1, 2, 3]
 	bet_strategies = [1, 2, 3]
 	hand_strategy_names =[
@@ -64,6 +63,7 @@ class BotPlayer(Player):
 		return self._bet_strategy_name
 
 	def end_game_stats(self):
+		""" Output end game stats for self."""
 		print("-"*25)
 		print("{n}:".format(n = self.name))
 		print("Hand Strategy: {h}".format(h = self.hand_strategy_name))
@@ -74,6 +74,7 @@ class BotPlayer(Player):
 		print("-"*25)
 
 	def raise_bet_after_win(self):
+		""" Strategy where a player raises their bet after a winning hand."""
 		if self.previous_round_win():
 			self.bet = self.round_bet_history[-1] * 2
 			if self.bet > self.cash:
@@ -82,6 +83,7 @@ class BotPlayer(Player):
 			self.bet = self.min_bet
 
 	def raise_bet_after_loss(self):
+		""" Strategy where a player raises their bet after a losing hand."""
 		if not self.previous_round_win():
 			self.bet = self.round_bet_history[-1] * 2
 			if self.bet > self.cash:
@@ -90,54 +92,23 @@ class BotPlayer(Player):
 			self.bet = self.min_bet
 
 	def same_bet_as_previous_round(self):
+		""" Strategy where player always makes the minimum bet."""
 		self.bet = self.round_bet_history[-1]
 
 	def previous_round_win(self):
+		""" Return boolean if last round was win or not."""
 		if self.round_outcome_history[-1] == "Win":
 			return True
 		else:
 			return False
 
 	def previous_round_outcome(self):
+		""" Return Win/Loss/Tie from previous round."""
 		return self.round_outcome_history[-1]
 
 	def previous_round_bet(self):
+		""" Return bet from previous round."""
 		return self.round_bet_history[-1]
-
-	def add_round(self, o, b, c):
-		self.round_outcome_history.append(o)
-		self.round_bet_history.append(b)
-		self.round_cash_history.append(c)
-
-	def lose(self):
-		""" Subtract the player's bet from the player's cash total."""
-		print(Fore.RED + "{n} loses.".format(n = self.name))
-		print(Fore.WHITE)
-		self.cash = self.cash - self.bet
-		self.outcome = "Lose"
-		self.add_round(self.outcome, self.bet, self.cash)
-
-	def win(self):
-		""" Add the player's bet to the player's cash total."""
-		print(Fore.GREEN + "{n} wins!".format(n = self.name))
-		print(Fore.WHITE)
-		self.cash = self.cash + self.bet
-		self.outcome = "Win"
-		self.add_round(self.outcome, self.bet, self.cash)
-
-	def tie(self):
-		""" Alert the player they have tied the dealer."""
-		print(Fore.BLUE + "{n} ties.".format(n = self.name))
-		print(Fore.WHITE)
-		self.outcome = "Tie"
-		self.add_round(self.outcome, self.bet, self.cash)
-
-	def blackjack_win(self):
-		""" Add the players bet plus 1/2 bet to the player's cash total."""
-		print("{n} Blackjack!".format(n = self.name))
-		self.cash = self.cash + (self.bet * 1.5)
-		self.outcome = "Win"
-		self.add_round(self.outcome, self.bet, self.cash)
 
 	def place_bet(self):
 		""" Bot place bet amount for next hand."""
@@ -204,9 +175,7 @@ class BotPlayer(Player):
 		self.get_score()
 		if self.hand_strategy == 1:
 			return self.stand_on_all_12()
-		elif self.hand_strategy == 2:
+		if self.hand_strategy == 2:
 			return self.stand_on_all_17()
-		elif self.hand_strategy == 3:
+		if self.hand_strategy == 3:
 			return self.hit_on_soft_17()
-		else:
-			return False # place holder for now

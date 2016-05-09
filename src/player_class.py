@@ -7,11 +7,11 @@ Player Class
 class Player:
 
 	name_list = [
-					'Muffin','Poop','Fartface',
-					'Daipy','Turd','Cake',
-					'Skunk','Paul','George',
-					'John','Ringo'
-				]
+		'Muffin','Poop','Fartface',
+		'Daipy','Turd','Cake',
+		'Skunk','Paul','George',
+		'John','Ringo'
+	]
 
 	def __init__(self, n, c, t, tbl_min, tbl_max):
 		if n == "":
@@ -220,6 +220,7 @@ class Player:
 		self._round_cash_history = c
 
 	def highest_bet(self):
+		""" Go through round history, find highest bet and return it."""
 		maximum = 0
 		for bet in self.round_bet_history:
 			if bet > maximum:
@@ -228,6 +229,7 @@ class Player:
 		return self._highest_bet
 
 	def highest_cash(self):
+		""" Go through round history, find highest cash, return it."""
 		maximum = 0
 		for cash in self.round_cash_history:
 			if cash > maximum:
@@ -236,10 +238,12 @@ class Player:
 		return self._highest_cash
 
 	def out_of_money(self):
+		""" Find highest cash and bet when a player is out of money."""
 		self.highest_cash()
 		self.highest_bet()
 
 	def end_game_stats(self):
+		""" Print out post game statistics to the console."""
 		print("-"*25)
 		print("{n}:".format(n = self.name))
 		print("Rounds played: {r}".format(r = len(self.round_bet_history)))
@@ -248,15 +252,17 @@ class Player:
 		print("-"*25)
 
 	def place_bet(self, b):
+		""" Player place a bet."""
 		self.bet = b
 
 	def double_down(self):
+		""" Double this player's bet."""
 		print("Double down!")
 		print("{n}'s bet is now: {b}".format(n = self.name, b = self.bet))
 		self.bet = self.bet * 2
 
-	'''def get_score(self):
-		""" Calculate and return score of current hand."""
+	"""REWRITTEN BELOW
+	def get_score(self):
 		self.score = 0
 		ace = False
 		for card in self.hand:
@@ -268,11 +274,11 @@ class Player:
 					self.score = self.score - 10
 					ace = False
 		return self.score
-	'''
+	"""
 	def get_score(self):
+		""" Calculate and return score of current hand."""
 		score = 0
 		high_ace_count = 0
-		#count aces in hand
 		for card in self.hand:
 			if card.value == 11:
 				high_ace_count = high_ace_count + 1
@@ -363,12 +369,19 @@ class Player:
 		self.hand = [[self.hand[0]], [self.hand[1]]]
 		return self.hand
 
+	def add_round(self, o, b, c):
+		""" Add round history to corresponding lists."""
+		self.round_outcome_history.append(o)
+		self.round_bet_history.append(b)
+		self.round_cash_history.append(c)
+
 	def lose(self):
 		""" Subtract the player's bet from the player's cash total."""
 		print(Fore.RED + "{n} loses.".format(n = self.name))
 		print(Fore.WHITE)
 		self.cash = self.cash - self.bet
 		self.outcome = "Lose"
+		self.add_round(self.outcome, self.bet, self.cash)
 
 	def win(self):
 		""" Add the player's bet to the player's cash total."""
@@ -376,18 +389,21 @@ class Player:
 		print(Fore.WHITE)
 		self.cash = self.cash + self.bet
 		self.outcome = "Win"
+		self.add_round(self.outcome, self.bet, self.cash)
 
 	def tie(self):
 		""" Alert the player they have tied the dealer."""
 		print(Fore.BLUE + "{n} ties.".format(n = self.name))
 		print(Fore.WHITE)
 		self.outcome = "Tie"
+		self.add_round(self.outcome, self.bet, self.cash)
 
 	def blackjack_win(self):
 		""" Add the players bet plus 1/2 bet to the player's cash total."""
 		print("{n} Blackjack!".format(n = self.name))
 		self.cash = self.cash + (self.bet * 1.5)
 		self.outcome = "Win"
+		self.add_round(self.outcome, self.bet, self.cash)
 
 	def insurance_lose(self):
 		""" Subtract player's insurance bet from cash."""
@@ -435,7 +451,7 @@ class Player:
 										c = self.get_split_score()[0])
 										)
 		else:
-			print("{n}: {h}: {c} -> BUSTED!"\
+			print("{n}: {h}: {c}: BUSTED!"\
 									.format(
 										n = self.name,
 										h = [card.display for card in hand1],

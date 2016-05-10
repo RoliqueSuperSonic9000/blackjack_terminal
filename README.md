@@ -23,17 +23,21 @@ Note: The last step 'chmod +x blackjack.py' may not be necessary
 ## Usage
 Navigate to src/ directory
 ````
-$ ./blackjack --help
-usage: blackjack.py [-h] [-s SHOE] [--house HOUSE] [-b BOTS]
-                    [--minimum MINIMUM] [--maximum MAXIMUM]
+usage: blackjack.py [-h] [-p PLAYERS] [-s SHOE] [--house HOUSE] [-b BOTS]
+                    [-t TIME] [--minimum MINIMUM] [--maximum MAXIMUM]
 
-Blackjack Terminal Game
+Blackjack Terminal: A game for fun or a simulator for putting strategies to
+the test
 
 optional arguments:
   -h, --help            show this help message and exit
+  -p PLAYERS, --players PLAYERS
+                        Number of Human players
   -s SHOE, --shoe SHOE  set how many decks used in the shoe
   --house HOUSE         1: Dealer stand on all 17, 2: Dealer hit on soft 17
-  -b BOTS, --bots BOTS  Enter number of bots you want. Up to 5
+  -b BOTS, --bots BOTS  Enter number of bots you want. Up to 7
+  -t TIME, --time TIME  Wait time for actions such as deal cards, hit, stand,
+                        etc. For simulations do 0, for humans playing do 1.5
   --minimum MINIMUM     Table Minimum Bet
   --maximum MAXIMUM     Table Maximum Bet
 ````
@@ -41,13 +45,13 @@ optional arguments:
 ## Examples
 To play by yourself with default settings and no bots
 ````
-$ ./blackjack.py
+$ ./blackjack.py --players 1
 ````
 Play with 3 bots
 ````
-$ ./blackjack.py --bots 3
+$ ./blackjack.py --players 1 --bots 3
 ````
-Play with 5 bots, minimum bet is 50, maximum bet is 500
+Run simulation of 5 bots, minimum bet is 50, maximum bet is 500
 ````
 $ ./blackjack.py --bots 5 --minimum 50 --maximum 500
 ````

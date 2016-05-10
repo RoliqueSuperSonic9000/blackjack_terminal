@@ -23,6 +23,7 @@ Note: The last step 'chmod +x blackjack.py' may not be necessary
 ## Usage
 Navigate to src/ directory
 ````
+$ ./blackjack --help
 usage: blackjack.py [-h] [-p PLAYERS] [-s SHOE] [--house HOUSE] [-b BOTS]
                     [-t TIME] [--minimum MINIMUM] [--maximum MAXIMUM]
 

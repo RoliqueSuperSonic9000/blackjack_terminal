@@ -619,13 +619,27 @@ def connect_to_database():
 
 def create_tables(connection):
 	""" Create database tables if they are not yet created."""
+	connection.execute(""" CREATE TABLE IF NOT EXISTS GAMES
+		(GAME_ID		INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+		ROUNDS	INT);""")
+
+	# add foreign key to this table and have it be the game id
 	connection.execute(""" CREATE TABLE IF NOT EXISTS ROUNDS
-		(ID 	INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+		(ROUND_ID 	INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
 		NAME 	TEXT,
 		BET 	INT,
 		CARD1 	TEXT,
 		CARD2,	TEXT,
 		OUTCOME TEXT);""")
+
+def insert_game(rounds, connection):
+	print rounds
+	try:
+		connection.execute(
+			"""INSERT INTO GAMES (ROUNDS) VALUES ({r});""".format(r = rounds)
+		)
+	except:
+		print 'Didnt work'
 
 def insert_round(players, connection):
 	""" Insert each player's hand, bet, and outcome into table ROUNDS."""
@@ -746,6 +760,7 @@ if __name__ == "__main__":
 			for player in out:
 				player.end_game_stats()
 			end_game = True
+			insert_game(round_num, connection)
 			continue
 
 	connection.close()

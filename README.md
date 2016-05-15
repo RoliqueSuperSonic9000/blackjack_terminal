@@ -8,13 +8,13 @@ Play blackjack from terminal by yourself, with friends, or with 'bots'. Blackjac
 Questions can be sent to joe.pasquantonio@gmail.com
 
 ## Issues
-Use the [github issue tracker](https://github.com/pasquantonio/blackjack_terminal_game/issues) for bug reports and feature requests.
+Use the [github issue tracker](https://github.com/pasquantonio/blackjack_terminal/issues) for bug reports and feature requests.
 
 ## Install
 #### From Source:
 ````bash
-$ git clone https://github.com/pasquantonio/blackjack_terminal_game.git
-$ cd blackjack_terminal_game/
+$ git clone https://github.com/pasquantonio/blackjack_terminal.git
+$ cd blackjack_terminal/
 $ cd src/
 $ chmod +x blackjack.py
 ````

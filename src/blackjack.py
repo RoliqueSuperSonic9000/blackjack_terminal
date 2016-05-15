@@ -19,24 +19,28 @@ def create_players(p, bots, minimum, maximum):
 	for i in range(0, p):
 		n, b = get_user_info(i)
 		players.append(Player(n, b, "Human", minimum, maximum))
-	for i in range(0, bots):
-		entering = True
-		while entering:
-			try:
-				cash = int(
-						raw_input(
-							"Enter starting cash for Bot {num} "
-							"(20, 50, 100, 200, 500, 1000, 2000): "
-							.format(num = i+1)))
-				if cash in [20, 50, 100, 200, 500, 1000, 2000]:
-					entering = False
-				else:
-					print(
-					"Please enter one of these: (20, 50, 100, 200, 500): "
-					)
-			except ValueError, e:
-				print("Enter a number please")
-		players.append(BotPlayer("",cash, "Bot", minimum, maximum))
+	if not bot_bets:
+		for i in range(0, bots):
+			entering = True
+			while entering:
+				try:
+					cash = int(
+							raw_input(
+								"Enter starting cash for Bot {num} "
+								"(20, 50, 100, 200, 500, 1000, 2000): "
+								.format(num = i+1)))
+					if cash in [20, 50, 100, 200, 500, 1000, 2000]:
+						entering = False
+					else:
+						print(
+						"Please enter one of these: (20, 50, 100, 200, 500): "
+						)
+				except ValueError, e:
+					print("Enter a number please")
+			players.append(BotPlayer("",cash, "Bot", minimum, maximum))
+	else:
+		for i in range(0, bots):
+			players.append(BotPlayer("",bot_bets, "Bot", minimum, maximum))
 	return players
 
 def get_user_info(i):
@@ -576,6 +580,12 @@ def argument_setup(parser):
 	else:
 		bots = 0
 
+	global bot_bets
+	if args.all:
+		bot_bets = args.all
+	else:
+		bot_bets = False
+
 	global WAIT_TIME #messy code
 	if args.time:
 		WAIT_TIME = args.time
@@ -621,32 +631,31 @@ def create_tables(connection):
 	""" Create database tables if they are not yet created."""
 	connection.execute(""" CREATE TABLE IF NOT EXISTS GAMES
 		(GAME_ID		INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-		ROUNDS	INT);""")
+		ROUNDS			INT);""")
 
-	# add foreign key to this table and have it be the game id
 	connection.execute(""" CREATE TABLE IF NOT EXISTS ROUNDS
 		(ROUND_ID 	INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-		NAME 	TEXT,
+		PLAYER_NAME 	TEXT,
 		BET 	INT,
 		CARD1 	TEXT,
 		CARD2,	TEXT,
 		OUTCOME TEXT);""")
 
 def insert_game(rounds, connection):
-	print rounds
 	try:
 		connection.execute(
 			"""INSERT INTO GAMES (ROUNDS) VALUES ({r});""".format(r = rounds)
 		)
-	except:
-		print 'Didnt work'
+		connection.commit()
+	except sqlite3.Error as e:
+		print e
 
 def insert_round(players, connection):
 	""" Insert each player's hand, bet, and outcome into table ROUNDS."""
 	for player in players:
 		if not player.split:
 			connection.execute(
-				"""INSERT INTO ROUNDS (NAME,BET,CARD1,CARD2,OUTCOME)"""
+				"""INSERT INTO ROUNDS (PLAYER_NAME,BET,CARD1,CARD2,OUTCOME)"""
 				"""VALUES ('{n}',{b},'{c1}','{c2}','{o}');"""
 					.format(
 						n=player.name,
@@ -709,6 +718,11 @@ if __name__ == "__main__":
 		"-t","--time",
 		help="Wait time for actions such as deal cards, hit, stand, etc"
 			". For simulations do 0, for humans playing do 1.5",
+		type=int
+	)
+	parser.add_argument(
+		"-a","--all",
+		help="Give every bot the same starting cash value",
 		type=int
 	)
 	parser.add_argument("--minimum", help="Table Minimum Bet", type=int)

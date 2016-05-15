@@ -620,7 +620,7 @@ def argument_setup(parser):
 def connect_to_database():
 	""" Attempt to connect to sqlite database. Return connection object."""
 	try:
-		connection = sqlite3.connect('test_db')
+		connection = sqlite3.connect('blackjack_terminal')
 		print("DB Connected!")
 	except Exception, e:
 		print e

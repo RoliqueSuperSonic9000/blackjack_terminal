@@ -25,7 +25,7 @@ Navigate to src/ directory
 ````
 $ ./blackjack --help
 usage: blackjack.py [-h] [-p PLAYERS] [-s SHOE] [--house HOUSE] [-b BOTS]
-                    [-t TIME] [--minimum MINIMUM] [--maximum MAXIMUM]
+                    [-t TIME] [-a ALL] [--minimum MINIMUM] [--maximum MAXIMUM]
 
 Blackjack Terminal: A game for fun or a simulator for putting strategies to
 the test
@@ -39,6 +39,7 @@ optional arguments:
   -b BOTS, --bots BOTS  Enter number of bots you want. Up to 7
   -t TIME, --time TIME  Wait time for actions such as deal cards, hit, stand,
                         etc. For simulations do 0, for humans playing do 1.5
+  -a ALL, --all ALL     Give every bot the same starting cash value
   --minimum MINIMUM     Table Minimum Bet
   --maximum MAXIMUM     Table Maximum Bet
 ````
